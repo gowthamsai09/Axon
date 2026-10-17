@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "NotableFigure": {
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Context",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "context"
+      ],
+      "title": "NotableFigure",
+      "type": "object"
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/gowthamsai09/Axon/main/schemas/summary.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "entities": {
+      "items": {
+        "maxLength": 100,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Entities",
+      "type": "array"
+    },
+    "injection_flag": {
+      "title": "Injection Flag",
+      "type": "boolean"
+    },
+    "key_points": {
+      "items": {
+        "maxLength": 240,
+        "type": "string"
+      },
+      "maxItems": 6,
+      "title": "Key Points",
+      "type": "array"
+    },
+    "notable_figures": {
+      "items": {
+        "$ref": "#/$defs/NotableFigure"
+      },
+      "maxItems": 10,
+      "title": "Notable Figures",
+      "type": "array"
+    },
+    "one_line": {
+      "maxLength": 200,
+      "title": "One Line",
+      "type": "string"
+    },
+    "source_url": {
+      "maxLength": 2048,
+      "minLength": 8,
+      "title": "Source Url",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "insufficient_content",
+        "suspected_injection"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tags": {
+      "items": {
+        "enum": [
+          "llm-releases",
+          "open-source-llms",
+          "small-local-models",
+          "multimodal",
+          "agents-tooling",
+          "rag",
+          "fine-tuning-training",
+          "research-papers",
+          "mlops-infra",
+          "ai-hardware",
+          "evals-benchmarks",
+          "safety-alignment",
+          "ai-policy-regulation",
+          "ai-products-apps",
+          "datasets",
+          "robotics"
+        ],
+        "type": "string"
+      },
+      "maxItems": 4,
+      "title": "Tags",
+      "type": "array"
+    },
+    "title": {
+      "maxLength": 300,
+      "title": "Title",
+      "type": "string"
+    },
+    "why_it_matters": {
+      "maxLength": 300,
+      "title": "Why It Matters",
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "title",
+    "one_line",
+    "key_points",
+    "why_it_matters",
+    "tags",
+    "entities",
+    "notable_figures",
+    "source_url",
+    "injection_flag"
+  ],
+  "title": "Summary",
+  "type": "object"
+}

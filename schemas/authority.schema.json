@@ -1,0 +1,107 @@
+{
+  "$defs": {
+    "AuthorityTier": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "examples": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Examples",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "max_score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Max Score",
+          "type": "number"
+        },
+        "min_score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Min Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "min_score",
+        "max_score",
+        "description"
+      ],
+      "title": "AuthorityTier",
+      "type": "object"
+    },
+    "NewSourceRule": {
+      "additionalProperties": false,
+      "properties": {
+        "cap_until_reviewed": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Cap Until Reviewed",
+          "type": "number"
+        },
+        "default": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Default",
+          "type": "number"
+        },
+        "steps": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "default",
+        "cap_until_reviewed",
+        "steps"
+      ],
+      "title": "NewSourceRule",
+      "type": "object"
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/gowthamsai09/Axon/main/schemas/authority.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "new_source_rule": {
+      "$ref": "#/$defs/NewSourceRule"
+    },
+    "tiers": {
+      "items": {
+        "$ref": "#/$defs/AuthorityTier"
+      },
+      "minItems": 2,
+      "title": "Tiers",
+      "type": "array"
+    },
+    "version": {
+      "const": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version",
+    "tiers",
+    "new_source_rule"
+  ],
+  "title": "AuthorityConfig",
+  "type": "object"
+}

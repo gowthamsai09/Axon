@@ -1,0 +1,194 @@
+{
+  "$defs": {
+    "ModelInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "deepseek",
+            "huggingface",
+            "openai_compatible"
+          ],
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "model"
+      ],
+      "title": "ModelInfo",
+      "type": "object"
+    },
+    "TaskItem": {
+      "additionalProperties": false,
+      "properties": {
+        "fallback_snippet": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fallback Snippet"
+        },
+        "id": {
+          "pattern": "^[a-f0-9]{16}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TaskItemSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "title": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "maxLength": 2048,
+          "minLength": 8,
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "url"
+      ],
+      "title": "TaskItem",
+      "type": "object"
+    },
+    "TaskItemSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "key_points": {
+          "items": {
+            "maxLength": 240,
+            "type": "string"
+          },
+          "maxItems": 6,
+          "title": "Key Points",
+          "type": "array"
+        },
+        "one_line": {
+          "maxLength": 200,
+          "title": "One Line",
+          "type": "string"
+        },
+        "tags": {
+          "items": {
+            "enum": [
+              "llm-releases",
+              "open-source-llms",
+              "small-local-models",
+              "multimodal",
+              "agents-tooling",
+              "rag",
+              "fine-tuning-training",
+              "research-papers",
+              "mlops-infra",
+              "ai-hardware",
+              "evals-benchmarks",
+              "safety-alignment",
+              "ai-policy-regulation",
+              "ai-products-apps",
+              "datasets",
+              "robotics"
+            ],
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Tags",
+          "type": "array"
+        },
+        "why_it_matters": {
+          "maxLength": 300,
+          "title": "Why It Matters",
+          "type": "string"
+        }
+      },
+      "required": [
+        "one_line",
+        "key_points",
+        "why_it_matters",
+        "tags"
+      ],
+      "title": "TaskItemSummary",
+      "type": "object"
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/gowthamsai09/Axon/main/schemas/task-result.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "finished_at": {
+      "format": "date-time",
+      "title": "Finished At",
+      "type": "string"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/TaskItem"
+      },
+      "maxItems": 25,
+      "title": "Items",
+      "type": "array"
+    },
+    "model": {
+      "$ref": "#/$defs/ModelInfo"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "task_id": {
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "maxLength": 500,
+        "type": "string"
+      },
+      "maxItems": 100,
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "task_id",
+    "status",
+    "finished_at",
+    "items",
+    "model",
+    "warnings"
+  ],
+  "title": "TaskResult",
+  "type": "object"
+}

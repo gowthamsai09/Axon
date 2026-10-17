@@ -1,0 +1,201 @@
+{
+  "$defs": {
+    "NeedsResearchEntry": {
+      "additionalProperties": false,
+      "description": "A source whose feed (if any) is unknown. Never put guessed feed URLs here.",
+      "properties": {
+        "homepage": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "minLength": 9,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Homepage"
+        },
+        "id": {
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "note": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "note"
+      ],
+      "title": "NeedsResearchEntry",
+      "type": "object"
+    },
+    "SourceEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Authority",
+          "type": "number"
+        },
+        "default_tags": {
+          "items": {
+            "enum": [
+              "llm-releases",
+              "open-source-llms",
+              "small-local-models",
+              "multimodal",
+              "agents-tooling",
+              "rag",
+              "fine-tuning-training",
+              "research-papers",
+              "mlops-infra",
+              "ai-hardware",
+              "evals-benchmarks",
+              "safety-alignment",
+              "ai-policy-regulation",
+              "ai-products-apps",
+              "datasets",
+              "robotics"
+            ],
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Default Tags",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "rate_limit_per_min": {
+          "exclusiveMinimum": 0,
+          "maximum": 600,
+          "title": "Rate Limit Per Min",
+          "type": "number"
+        },
+        "repos": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repos"
+        },
+        "type": {
+          "enum": [
+            "rss",
+            "api",
+            "github_releases"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "minLength": 9,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "url_template": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url Template"
+        },
+        "verify": {
+          "default": false,
+          "title": "Verify",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "authority",
+        "default_tags",
+        "rate_limit_per_min"
+      ],
+      "title": "SourceEntry",
+      "type": "object"
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/gowthamsai09/Axon/main/schemas/sources.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "needs_research": {
+      "items": {
+        "$ref": "#/$defs/NeedsResearchEntry"
+      },
+      "title": "Needs Research",
+      "type": "array"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/SourceEntry"
+      },
+      "minItems": 1,
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "sources"
+  ],
+  "title": "SourcesFile",
+  "type": "object"
+}

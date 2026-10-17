@@ -1,0 +1,285 @@
+{
+  "$defs": {
+    "AgentAccess": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_inbound_agents": {
+          "default": true,
+          "title": "Allow Inbound Agents",
+          "type": "boolean"
+        },
+        "allowed_modes": {
+          "items": {
+            "enum": [
+              "data",
+              "summary",
+              "digest"
+            ],
+            "type": "string"
+          },
+          "title": "Allowed Modes",
+          "type": "array"
+        },
+        "max_tier3_runs_per_day": {
+          "default": 5,
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Max Tier3 Runs Per Day",
+          "type": "integer"
+        }
+      },
+      "title": "AgentAccess",
+      "type": "object"
+    },
+    "Delivery": {
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "enum": [
+            "email",
+            "telegram",
+            "slack",
+            "rss"
+          ],
+          "title": "Channel",
+          "type": "string"
+        },
+        "depth": {
+          "enum": [
+            "headlines",
+            "brief",
+            "detailed"
+          ],
+          "title": "Depth",
+          "type": "string"
+        },
+        "frequency": {
+          "enum": [
+            "daily",
+            "weekly"
+          ],
+          "title": "Frequency",
+          "type": "string"
+        },
+        "language": {
+          "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$",
+          "title": "Language",
+          "type": "string"
+        },
+        "max_items": {
+          "maximum": 25,
+          "minimum": 1,
+          "title": "Max Items",
+          "type": "integer"
+        },
+        "send_time_local": {
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+          "title": "Send Time Local",
+          "type": "string"
+        },
+        "timezone": {
+          "title": "Timezone",
+          "type": "string"
+        },
+        "weekday": {
+          "anyOf": [
+            {
+              "enum": [
+                "mon",
+                "tue",
+                "wed",
+                "thu",
+                "fri",
+                "sat",
+                "sun"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Weekday"
+        }
+      },
+      "required": [
+        "channel",
+        "frequency",
+        "send_time_local",
+        "timezone",
+        "depth",
+        "max_items",
+        "language"
+      ],
+      "title": "Delivery",
+      "type": "object"
+    },
+    "Interests": {
+      "additionalProperties": false,
+      "properties": {
+        "follow_entities": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Follow Entities",
+          "type": "array"
+        },
+        "keywords_exclude": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Keywords Exclude",
+          "type": "array"
+        },
+        "keywords_include": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Keywords Include",
+          "type": "array"
+        },
+        "topics": {
+          "items": {
+            "enum": [
+              "llm-releases",
+              "open-source-llms",
+              "small-local-models",
+              "multimodal",
+              "agents-tooling",
+              "rag",
+              "fine-tuning-training",
+              "research-papers",
+              "mlops-infra",
+              "ai-hardware",
+              "evals-benchmarks",
+              "safety-alignment",
+              "ai-policy-regulation",
+              "ai-products-apps",
+              "datasets",
+              "robotics"
+            ],
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Topics",
+          "type": "array"
+        }
+      },
+      "title": "Interests",
+      "type": "object"
+    },
+    "Sources": {
+      "additionalProperties": false,
+      "properties": {
+        "extra_rss": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Extra Rss",
+          "type": "array"
+        },
+        "use_shared_feed": {
+          "default": true,
+          "title": "Use Shared Feed",
+          "type": "boolean"
+        }
+      },
+      "title": "Sources",
+      "type": "object"
+    },
+    "Summarizer": {
+      "additionalProperties": false,
+      "properties": {
+        "base_url": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Base Url",
+          "type": "string"
+        },
+        "fallback_model": {
+          "default": "",
+          "maxLength": 100,
+          "title": "Fallback Model",
+          "type": "string"
+        },
+        "fallback_provider": {
+          "default": "",
+          "enum": [
+            "",
+            "deepseek",
+            "huggingface"
+          ],
+          "title": "Fallback Provider",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "deepseek",
+            "huggingface",
+            "openai_compatible"
+          ],
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "model"
+      ],
+      "title": "Summarizer",
+      "type": "object"
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/gowthamsai09/Axon/main/schemas/profile.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "agent_access": {
+      "$ref": "#/$defs/AgentAccess"
+    },
+    "delivery": {
+      "$ref": "#/$defs/Delivery"
+    },
+    "interests": {
+      "$ref": "#/$defs/Interests"
+    },
+    "sources": {
+      "$ref": "#/$defs/Sources"
+    },
+    "summarizer": {
+      "$ref": "#/$defs/Summarizer"
+    },
+    "version": {
+      "const": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version",
+    "interests",
+    "sources",
+    "delivery",
+    "summarizer",
+    "agent_access"
+  ],
+  "title": "Profile",
+  "type": "object"
+}

@@ -1,0 +1,139 @@
+{
+  "$defs": {
+    "EntityDef": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Aliases",
+          "type": "array"
+        },
+        "ambiguous_aliases": {
+          "items": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Ambiguous Aliases",
+          "type": "array"
+        },
+        "name": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        }
+      },
+      "required": [
+        "name",
+        "aliases"
+      ],
+      "title": "EntityDef",
+      "type": "object"
+    },
+    "TopicDef": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "keywords": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Keywords",
+          "type": "array"
+        },
+        "shared_keywords": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Shared Keywords",
+          "type": "array"
+        }
+      },
+      "required": [
+        "description",
+        "keywords"
+      ],
+      "title": "TopicDef",
+      "type": "object"
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/gowthamsai09/Axon/main/schemas/taxonomy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "entities": {
+      "patternProperties": {
+        "^[a-z0-9]+(?:-[a-z0-9]+)*$": {
+          "$ref": "#/$defs/EntityDef"
+        }
+      },
+      "propertyNames": {
+        "maxLength": 64
+      },
+      "title": "Entities",
+      "type": "object"
+    },
+    "topics": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TopicDef"
+      },
+      "propertyNames": {
+        "enum": [
+          "llm-releases",
+          "open-source-llms",
+          "small-local-models",
+          "multimodal",
+          "agents-tooling",
+          "rag",
+          "fine-tuning-training",
+          "research-papers",
+          "mlops-infra",
+          "ai-hardware",
+          "evals-benchmarks",
+          "safety-alignment",
+          "ai-policy-regulation",
+          "ai-products-apps",
+          "datasets",
+          "robotics"
+        ]
+      },
+      "title": "Topics",
+      "type": "object"
+    }
+  },
+  "required": [
+    "topics",
+    "entities"
+  ],
+  "title": "Taxonomy",
+  "type": "object"
+}
