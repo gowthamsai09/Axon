@@ -4,7 +4,7 @@
 **Model:** Git-native, Bring-Your-Own-Key (BYOK), Mode A (one private repo per user)
 **Hosting:** GitHub (Actions, Pages, App) plus Cloudflare Workers (gateway)
 **Protocols:** A2A (Agent2Agent) and MCP, both as thin adapters over one core
-**Version:** 1.2 (Phase 0 deltas accepted 2026-10-16; collector findings from real captures in Appendix C items 15 to 20)
+**Version:** 1.3 (Phase 1 complete 2026-10-18; Phase 0 deltas in Appendix C items 1 to 14; collector findings from real captures in items 15 to 20; Phase 1 deltas in items 21 to 28)
 
 > Free-tier limits and protocol specs change often. Every item that needs verification is listed in [Appendix B](#appendix-b-verify-before-you-build). Check them before you commit to a design detail.
 
@@ -149,14 +149,16 @@ axon-feed/
 │   ├── base.py               # Collector protocol: fetch() -> list[RawItem]
 │   ├── rss.py  github_releases.py  arxiv.py  hf.py  hn.py  reddit_rss.py   # reddit: disabled (5.1)
 ├── pipeline/
-│   ├── canonicalize.py  dedupe.py  extract.py  tag.py  score.py  publish.py
+│   ├── canonicalize.py  redirects.py  dedupe.py  extract.py  tag.py  score.py  publish.py
+│   ├── store.py              # rolling raw-item store (5.7)
 │   ├── window.py             # collection window (5.6)
 │   └── run.py                # entry point used by collect.yml
 ├── config/
 │   ├── sources.yaml          # `sources:` + `needs_research:` (see A.3)
 │   ├── taxonomy.yaml         # topic slugs, keyword rules, entity aliases
 │   └── authority.yaml        # authority scale and the new-source rule
-├── scripts/                  # validate_config, validate_sources, capture_samples, export_schemas
+├── scripts/                  # validate_config, validate_sources, capture_samples, export_schemas, inspect_feed, publish_data
+├── docs/go-live.md           # first-push checklist
 ├── tests/
 └── .github/workflows/  collect.yml  ci.yml
 ```
@@ -228,10 +230,10 @@ Rules: respect `robots.txt`, send a descriptive User-Agent with a contact URL, u
 ### 5.2 Pipeline stages
 
 1. **Fetch** with conditional requests. A failing source is logged and skipped, and never fails the run.
-2. **Canonicalize** URLs: strip tracking params, resolve redirects, lowercase the host, drop fragments. `id = sha256(canonical_url)[:16]`.
-3. **Extract** the main text with `trafilatura`, keeping a clean excerpt (about 2,000 characters) for Tier 2 and the user pipeline.
+2. **Canonicalize** URLs: strip tracking params, lowercase the host, drop fragments. Redirects are resolved first, but only for known redirector hosts (Appendix C item 23). `id = sha256(canonical_url)[:16]`.
+3. **Extract** the main text with `trafilatura`, keeping a clean excerpt (about 2,000 characters) for Tier 2 and the user pipeline. Pages of video and social hosts are never fetched, and a failing page is tried at most twice across runs (item 25).
 4. **Dedupe:** exact via `id`; near-duplicate via normalized-title similarity plus simhash of the excerpt. Cluster duplicates into one primary item with `also_covered_by`.
-5. **Tag (rule-based, no LLM):** `taxonomy.yaml` maps keywords to topic slugs, an alias dictionary detects entities, and sources carry default tags.
+5. **Tag (rule-based, no LLM):** `taxonomy.yaml` maps keywords to topic slugs, an alias dictionary detects entities, and sources carry default tags. A topic needs a title hit or two distinct body hits. An entity needs a title hit or at least two body mentions; release notes match entities in the title only (item 22).
 6. **Score** a base score (see 5.3).
 7. **Publish** shards to the `data` branch.
 
@@ -256,6 +258,7 @@ user_score = base_score + 0.50 * interest_match - 0.50 * exclusion_penalty
 /feed/entities/<slug>.json      # last 7 days per tracked entity
 /feed/items/<id>.json           # full normalized item incl. excerpt (7-day retention)
 /feed/archive/YYYY/MM/DD.jsonl  # long-term, append-only
+/feed/store.json                # operator state (5.7): raw items in the window and the redirect cache; not part of the consumer contract
 ```
 
 Sharding exists because a free-plan Worker has a tight per-request CPU budget. The gateway should fetch a small shard rather than parse a large index.
@@ -278,28 +281,32 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@<pin-to-commit-sha>        # pin all third-party actions to SHAs
-      - uses: actions/checkout@<pin-to-commit-sha>
+      - uses: actions/checkout@<commit sha>      # all third-party actions are pinned to commit SHAs
         with:
-          ref: data
-          path: data
-      - uses: actions/setup-python@<pin-to-commit-sha>
+          persist-credentials: false
+      - uses: actions/setup-python@<commit sha>
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: requirements*.txt
       - run: pip install -r requirements.txt
-      - run: python -m pipeline.run --out data/feed --window-hours 168   # development default is 24, see 5.6
-      - name: Commit feed
-        working-directory: data
-        run: |
-          git config user.name "feed-bot"
-          git config user.email "feed-bot@users.noreply.github.com"
-          git add -A
-          git diff --cached --quiet || git commit -m "feed update $(date -u +%FT%TZ)"
-          git push origin data
+      - name: Fetch the data branch (the first run starts it)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REMOTE: ${{ github.server_url }}/${{ github.repository }}.git
+        run: python -m scripts.publish_data prepare --data-dir data --remote "$REMOTE"
+      - name: Collect, process and write the feed
+        env:
+          CONTACT_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: python -m pipeline.run --out data/feed --window-hours 168 --contact "$CONTACT_URL"   # development default is 24, see 5.6
+      - name: Commit and push the data branch (squashes its history weekly)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REMOTE: ${{ github.server_url }}/${{ github.repository }}.git
+        run: python -m scripts.publish_data push --data-dir data --remote "$REMOTE"
 ```
 
-Pages is configured to serve the `data` branch. Once a week, squash the branch history to an orphan commit so the repo does not grow without bound.
+The git work lives in `scripts/publish_data.py`, which is tested against a local repository. `prepare` fetches the `data` branch (depth just above the squash threshold) or starts an empty orphan branch on the first run. `push` commits what changed and pushes with the token as an HTTP header (never in a URL or stored remote). After 56 commits (8 runs a day for a week) the history is replaced by one orphan commit and force-pushed, so the repo does not grow without bound. A `.nojekyll` file is always kept. If no source returned anything the pipeline exits 1 and nothing is pushed. Pages is configured to serve the `data` branch (`docs/go-live.md` in `axon-feed`).
 
 ### 5.6 Collection window
 
@@ -307,8 +314,19 @@ Items older than the window are dropped before dedupe. `pipeline.run --window-ho
 sets it. **Production default: 168 (7 days)**, matching the shard retention in 5.4.
 **Development default: 24**: until all phases are complete, collect only the last 24 hours,
 so fixtures and runs stay small. Items with no publication date use the fetch time and add a
-warning. Source feeds are far larger than the window (a probe returned 1,296 entries for
+warning (the time is kept in the store, so the item does not stay new forever). Source feeds are far larger than the window (a probe returned 1,296 entries for
 `openai-news` and 879 for `hf-blog`), so the window filter runs first.
+
+### 5.7 Retention across runs
+
+Sources only return what they hold today (arXiv feeds hold only the current announcement day and are empty at weekends), so a stateless run cannot fill a 7-day window. Each run therefore keeps `feed/store.json` on the `data` branch: the raw items still inside the window (after redirect resolution and page extraction), each with `first_seen` and the number of page-fetch attempts, plus the redirect cache.
+
+1. Load the store. A missing, corrupt or wrong-version file is ignored with a warning and the run starts empty.
+2. Collect, window-filter, and merge with the stored items. New items win (fresh signals and title), except that a longer stored text and a publication date the source stopped giving are kept. Stored items the sources no longer return are retained while inside the window.
+3. Resolve redirects (cache first) and extract thin pages, then dedupe, tag and score the whole merged set. Rules tuned later therefore apply to older items too.
+4. Rebuild every shard from the merged set, then save the pruned store (atomic write). The store holds at most 6,000 items (newest win).
+
+`meta.json` reports `retained` per source: items only the store still holds. The archive stays append-only and is not duplicated by retained items. `--no-store` runs stateless; a shorter `--window-hours` than the previous run prunes the store to that window.
 
 ---
 
@@ -1065,7 +1083,7 @@ items, 100 warnings.
 | Phase | Deliverable |
 |---|---|
 | **0: Foundations** (1 to 2 days) | Three repos, taxonomy, `sources.yaml`, item schema, CI skeleton |
-| **1: Shared feed** | 5 to 7 collectors (Reddit excluded, see 5.1), dedupe, tagging, scoring, Pages publish, `collect.yml`; 24-hour window in development (5.6) |
+| **1: Shared feed** (done 2026-10-18) | 5 to 7 collectors (Reddit excluded, see 5.1), dedupe, tagging, scoring, Pages publish, `collect.yml`; 24-hour window in development (5.6) |
 | **2: User pipeline MVP** | Template repo, `profile.yaml`, summarizer router (DeepSeek and HF), email delivery, state branch, `digest.yml` |
 | **3: Gateway Tier 1 and 2** | Worker, Agent Card, `message/send` for data and summary, MCP `tools/list` and `tools/call`, rate limits |
 | **4: Tier 3** | GitHub App, OIDC registration, token issue and revoke, dispatch, status mapping, result files |
@@ -1082,7 +1100,9 @@ Until all phases are complete nothing is pushed to GitHub. Everything is built a
 - Collectors are built against captured real responses (`scripts/capture_samples.py`), not guesses.
 - Not testable locally: real Actions runs, GitHub Pages hosting, the GitHub App, OIDC registration
   and `workflow_dispatch`. Phase 4 uses a mocked GitHub API in tests, plus one real integration test
-  at the end. The `<pin-to-commit-sha>` placeholders, branch rulesets and Dependabot wait for the first push.
+  at the end. In `axon-feed` the actions are already pinned to SHAs and `scripts/publish_data.py` is tested
+  against a local bare repository; the `<pin-to-commit-sha>` placeholders in the template and gateway repos,
+  branch rulesets and Dependabot wait for the first push.
 
 ---
 
@@ -1349,8 +1369,11 @@ For each refusal give one short, neutral sentence. Do not apologize at length, d
 unknown: `id`, `name`, optional `homepage`, `note`; never a guessed feed URL). Optional entry fields:
 `verify` (probe with `scripts/validate_sources.py`), `note`, and for `type: github_releases`
 `repos` plus `url_template` (containing `{repo}`) instead of `url`. URLs are https. `rate_limit_per_min`
-is a positive number; it applies per source, and the per-domain rule (several sources share a host,
-e.g. arXiv) is decided in Phase 1.
+is a positive number. Per-domain rule: the effective limit of a host is the smallest `rate_limit_per_min`
+declared by any source that fetches from it (arXiv: three feeds on `rss.arxiv.org`; GitHub: six release
+feeds on `github.com`). Every request to that host, from a collector, the page extractor or the redirect
+resolver, is spaced by that gap through one shared throttle. Hosts no source declares use the limit of the
+source the item came from.
 
 `authority.yaml` defines five contiguous tiers (primary 0.85 to 1.00, platform 0.70 to 0.84,
 curated-aggregate 0.55 to 0.69, community 0.35 to 0.54, unvetted 0 to 0.34) and the new-source rule
@@ -1373,7 +1396,13 @@ any other duplicate across topics is a validation error. Entities need `name` an
 optional `ambiguous_aliases` (common words such as `Gemini`, `Meta`) count only when the name or a safe
 alias also appears in the same item; optional `notes`. Name or alias of 3 characters or fewer is matched
 case-sensitively (so `xAI` does not match `XAI`). When one match lies inside a longer match of another
-entity (`Hugging Face` inside `Hugging Face Transformers`), the longer one wins.
+entity (`Hugging Face` inside `Hugging Face Transformers`), the longer one wins. `name_ambiguous: true`
+(for names that are common words, such as `Apple` or `Cohere`) means the bare name never matches and the
+entity qualifies only through its aliases (it then needs at least one alias). An entity is tagged when it
+is in the title, or mentioned at least twice in the body (`MIN_ENTITY_MENTIONS = 2`, an assumption);
+items from `github_releases` match entities in the title only, because release bodies are build-matrix
+boilerplate (CUDA, ROCm, Apple Silicon). A name used as a compatibility adjective ("OpenAI-compatible",
+"S3 API compatible") is not a mention (item 28).
 
 ---
 
@@ -1425,7 +1454,17 @@ These change over time. Confirm each in current official documentation.
 19. **Extraction (verified need).** `hf-blog` entries carry only title, link and date; thin items (under 200 characters) get a page fetch with `trafilatura` (at most 30 per run; fallback to the page's meta description). All collector and extractor requests use the polite client: User-Agent, robots.txt, per-host throttle, 5 MB cap, public hosts only (also across redirects).
 20. **Cross-source merging.** Near-duplicate title or simhash merging happens only across different sources, and titles under 4 tokens (version strings) never merge by title. A cluster takes the highest authority as primary and the maximum of each engagement signal across members.
 
-**Open after Phase 1 step 2:** redirect resolution in canonicalize (5.2 step 2), cross-run retention and merge for the 7-day production window, deletion of the entities shard for entities that left the window is handled by pruning, and the per-domain rate-limit rule (A.3).
+21. **Entity names that are common words.** `EntityDef.name_ambiguous` (default false); the taxonomy schema gained this field. Applied to Apple (bare "Apple" gave 16 false hits in one run) and Cohere (A.4).
+22. **Entity tagging rule.** Title hit or at least 2 body mentions; release notes match the title only. On real output Qwen went from 43 items to 3 and NVIDIA, AMD and Apple stopped appearing on every llama.cpp release (5.2 step 5, A.4). Keyword tuning from real output (config, not spec): added `local llm(s)`, `quantized`, `cpu inference`, `on cpu`, `benchmarks`, `benchmarking`, `evaluations`, `structured output(s)`; the bare `policy` keyword (it matched RL "policy") was replaced by `ai policy`, `public policy`, `policymakers`.
+23. **Redirect resolution (5.2 step 2).** `Fetcher.resolve(url)` follows redirects hop by hop (at most 5; loops fail) through robots.txt, the throttle and the SSRF guard, never reading a body. If robots forbids the first URL nothing is learned and the original stays; if it forbids a later hop, that hop's URL (known from `Location`) is returned unfetched. Hops to non-public hosts are refused. Only hosts in `REDIRECT_HOSTS` (t.co, bit.ly, tinyurl.com, ow.ly, buff.ly, lnkd.in, goo.gl, dlvr.it, feedproxy.google.com) are resolved, at most 30 per run (`--max-redirects`). The id and `canonical_url` come from the resolved URL; `url` stays as the source gave it. A URL that does not redirect is cached as itself. Failures keep the original URL and add a warning.
+24. **Rolling store (5.7).** `feed/store.json`, `--store PATH`, `--no-store`; `retained` per source in `meta.json` and in `inspect_feed`.
+25. **Extraction.** Video and social hosts (YouTube, X/Twitter, Vimeo, Facebook, Instagram, TikTok, LinkedIn, Reddit) are never page-fetched (their pages gave footer boilerplate in other languages); a failing page is tried at most twice across runs.
+26. **Per-domain rate limit (A.3).** The strictest declared limit governs a host (`collectors.registry.host_limits`, `Throttle(host_limits=...)`).
+27. **Production workflow (5.5).** Real `collect.yml`, `scripts/publish_data.py` (first-run branch creation, commit, weekly squash after 56 commits, token as an HTTP header only), actions pinned to SHAs in `axon-feed`, `docs/go-live.md`. The run exits 1 when no source returned anything.
+
+28. **Precision fixes from the first live runs (2026-10-20).** The HN gate (item 18) keeps a story when LLM/LLMs is in the title, or at least twice in the story text, or once in the text with a clear AI term in the title (AI, GPT, OpenAI, Anthropic, Claude, Gemini, Copilot, agent(s)); a single incidental "LLM" in an unrelated post (dark mode requests, game reverse engineering) no longer passes. Entity matching ignores "X-compatible" phrases such as "OpenAI-compatible".
+
+**Open after Phase 1:** entity matching does not see new version names (Qwen4 does not match; only listed aliases such as Qwen3 do), stale-source detection that opens an Issue (11.1, Phase 5), the sources listed under `needs_research:` in `sources.yaml`, and the first real Actions run, Pages setup and branch rulesets (done at the first push, see `docs/go-live.md`).
 
 ---
 

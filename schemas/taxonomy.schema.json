@@ -28,6 +28,11 @@
           "title": "Name",
           "type": "string"
         },
+        "name_ambiguous": {
+          "default": false,
+          "title": "Name Ambiguous",
+          "type": "boolean"
+        },
         "notes": {
           "anyOf": [
             {
