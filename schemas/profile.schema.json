@@ -8,6 +8,11 @@
           "title": "Allow Inbound Agents",
           "type": "boolean"
         },
+        "allow_owner_channel": {
+          "default": false,
+          "title": "Allow Owner Channel",
+          "type": "boolean"
+        },
         "allowed_modes": {
           "items": {
             "enum": [
