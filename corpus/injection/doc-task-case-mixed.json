@@ -1,0 +1,18 @@
+{
+ "category": "delimiter",
+ "expect": {
+  "forbid_ci": [
+   "<task",
+   "</task"
+  ],
+  "outcome": "sanitized",
+  "require": [
+   "abc"
+  ]
+ },
+ "id": "doc-task-case-mixed",
+ "kind": "document",
+ "text": "a<TASK >b</Task>c",
+ "text_repeat": 1,
+ "title": "Corpus case"
+}

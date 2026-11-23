@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "one_line is too long"
+ },
+ "id": "out-overlong-one-line",
+ "kind": "output",
+ "patch": {
+  "one_line": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ },
+ "raw_text": null
+}

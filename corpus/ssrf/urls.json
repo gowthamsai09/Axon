@@ -1,0 +1,1088 @@
+[
+ {
+  "category": "allowed",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "allowed",
+  "id": "allow-domain",
+  "url": "https://example.com/"
+ },
+ {
+  "category": "allowed",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "allowed",
+  "id": "allow-port",
+  "url": "http://example.com:8080/feed"
+ },
+ {
+  "category": "allowed",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "allowed",
+  "id": "allow-highest-port",
+  "url": "http://example.com:65535/"
+ },
+ {
+  "category": "allowed",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "allowed",
+  "id": "allow-uppercase-host",
+  "url": "https://EXAMPLE.com/"
+ },
+ {
+  "category": "allowed",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "allowed",
+  "id": "allow-uppercase-scheme",
+  "url": "HTTP://EXAMPLE.COM/"
+ },
+ {
+  "category": "allowed",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "allowed",
+  "id": "allow-trailing-dot",
+  "url": "https://example.com./"
+ },
+ {
+  "category": "allowed",
+  "dns": {
+   "sub.example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "allowed",
+  "id": "allow-query-fragment",
+  "url": "https://sub.example.com/a?b=c#d"
+ },
+ {
+  "category": "allowed",
+  "dns": {},
+  "expect": "allowed",
+  "id": "allow-public-ipv4",
+  "url": "http://8.8.8.8/"
+ },
+ {
+  "category": "allowed",
+  "dns": {},
+  "expect": "allowed",
+  "id": "allow-public-ipv6",
+  "url": "https://[2606:4700:4700::1111]/"
+ },
+ {
+  "category": "allowed",
+  "dns": {
+   "m\u00fcnchen.de": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "allowed",
+  "id": "allow-idn",
+  "url": "https://m\u00fcnchen.de/"
+ },
+ {
+  "category": "allowed",
+  "dns": {
+   "multi.example": [
+    "93.184.216.34",
+    "2606:4700:4700::1111"
+   ]
+  },
+  "expect": "allowed",
+  "id": "allow-two-public-answers",
+  "url": "https://multi.example/"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-ftp",
+  "url": "ftp://example.com/"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-file",
+  "url": "file:///etc/passwd"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-gopher",
+  "url": "gopher://example.com/"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-javascript",
+  "url": "javascript:alert(1)"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-data",
+  "url": "data:text/plain,x"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-ws",
+  "url": "ws://example.com/"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-scheme-relative",
+  "url": "//example.com/x"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-no-scheme",
+  "url": "example.com/x"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-empty",
+  "url": ""
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-no-host",
+  "url": "http:///nohost"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-bare-scheme",
+  "url": "http://"
+ },
+ {
+  "category": "scheme",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "scheme-bad-ipv6-bracket",
+  "url": "http://[::1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-loopback",
+  "url": "http://127.0.0.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-loopback-port",
+  "url": "http://127.0.0.1:8080/x"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-loopback-high",
+  "url": "http://127.255.255.254/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-ten-low",
+  "url": "http://10.0.0.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-ten-high",
+  "url": "http://10.255.255.255/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-172-16",
+  "url": "http://172.16.0.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-172-31",
+  "url": "http://172.31.255.255/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-192-168",
+  "url": "http://192.168.1.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-metadata",
+  "url": "http://169.254.169.254/latest/meta-data"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-link-local",
+  "url": "http://169.254.0.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-cgnat",
+  "url": "http://100.64.0.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-unspecified",
+  "url": "http://0.0.0.0/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-broadcast",
+  "url": "http://255.255.255.255/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-multicast",
+  "url": "http://224.0.0.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-test-net-1",
+  "url": "http://192.0.2.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-benchmark",
+  "url": "http://198.18.0.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-test-net-2",
+  "url": "http://198.51.100.1/"
+ },
+ {
+  "category": "ipv4",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv4-test-net-3",
+  "url": "http://203.0.113.1/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-loopback",
+  "url": "http://[::1]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-unspecified",
+  "url": "http://[::]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-link-local",
+  "url": "http://[fe80::1]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-zone-id",
+  "url": "http://[fe80::1%25eth0]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-ula-fd",
+  "url": "http://[fd00::1]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-ula-fc",
+  "url": "http://[fc00::1]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-mapped-loopback",
+  "url": "http://[::ffff:127.0.0.1]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-mapped-private",
+  "url": "http://[::ffff:10.0.0.1]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-mapped-metadata",
+  "url": "http://[::ffff:169.254.169.254]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-mapped-hex",
+  "url": "http://[::ffff:7f00:1]/"
+ },
+ {
+  "category": "ipv6",
+  "dns": {},
+  "expect": "blocked",
+  "id": "ipv6-multicast",
+  "url": "http://[ff02::1]/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "2130706433": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-decimal",
+  "url": "http://2130706433/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "0x7f000001": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-hex",
+  "url": "http://0x7f000001/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "0x7f.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-hex-dotted",
+  "url": "http://0x7f.0.0.1/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "017700000001": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-octal",
+  "url": "http://017700000001/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "0177.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-octal-dotted",
+  "url": "http://0177.0.0.1/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "127.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-short-127-1",
+  "url": "http://127.1/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "127.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-short-127-0-1",
+  "url": "http://127.0.1/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "0": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-zero",
+  "url": "http://0/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "3232235777": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-decimal-192-168",
+  "url": "http://3232235777/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "169.254.43518": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-mixed-metadata",
+  "url": "http://169.254.43518/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "0xa9fea9fe": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-hex-metadata",
+  "url": "http://0xa9fea9fe/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "127.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-trailing-dot",
+  "url": "http://127.0.0.1./"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "\uff11\uff12\uff17.\uff10.\uff10.\uff11": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-fullwidth-digits",
+  "url": "http://\uff11\uff12\uff17.\uff10.\uff10.\uff11/"
+ },
+ {
+  "category": "numeric-host",
+  "dns": {
+   "%31%32%37.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "numeric-percent-encoded",
+  "url": "http://%31%32%37.0.0.1/"
+ },
+ {
+  "category": "host-syntax",
+  "dns": {
+   "exa mple.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "host-with-space",
+  "url": "http://exa mple.com/"
+ },
+ {
+  "category": "userinfo",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ],
+   "example.com%40127.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "userinfo-user-pass",
+  "url": "http://user:pass@example.com/"
+ },
+ {
+  "category": "userinfo",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ],
+   "example.com%40127.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "userinfo-user-only",
+  "url": "http://user@example.com/"
+ },
+ {
+  "category": "userinfo",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ],
+   "example.com%40127.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "userinfo-host-as-user",
+  "url": "http://example.com@127.0.0.1/"
+ },
+ {
+  "category": "userinfo",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ],
+   "example.com%40127.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "userinfo-ip-as-user",
+  "url": "http://127.0.0.1@example.com/"
+ },
+ {
+  "category": "userinfo",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ],
+   "example.com%40127.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "userinfo-empty-userinfo",
+  "url": "http://:@example.com/"
+ },
+ {
+  "category": "userinfo",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ],
+   "example.com%40127.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "userinfo-encoded-at",
+  "url": "http://example.com%40127.0.0.1/"
+ },
+ {
+  "category": "userinfo",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ],
+   "example.com%40127.0.0.1": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "userinfo-backslash-at",
+  "url": "http://example.com\\@127.0.0.1/"
+ },
+ {
+  "category": "port",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "port-too-high",
+  "url": "http://example.com:99999/"
+ },
+ {
+  "category": "port",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "port-letters",
+  "url": "http://example.com:abc/"
+ },
+ {
+  "category": "port",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "port-negative",
+  "url": "http://example.com:-1/"
+ },
+ {
+  "category": "port",
+  "dns": {
+   "example.com": [
+    "93.184.216.34"
+   ]
+  },
+  "expect": "blocked",
+  "id": "port-65536",
+  "url": "http://example.com:65536/"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-localhost",
+  "url": "http://localhost/"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-localhost-dot",
+  "url": "http://localhost./"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-localhost-upper",
+  "url": "http://LOCALHOST/"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-localhost-subdomain",
+  "url": "http://foo.localhost/"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-metadata-name",
+  "url": "http://metadata.google.internal/"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-private-answer",
+  "url": "http://internal.example/"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-mixed-answers",
+  "url": "http://rebind.example/"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-ipv6-loopback-answer",
+  "url": "http://v6.example/"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-mapped-answer",
+  "url": "http://mapped.example/"
+ },
+ {
+  "category": "dns",
+  "dns": {
+   "foo.localhost": [
+    "127.0.0.1"
+   ],
+   "internal.example": [
+    "10.1.2.3"
+   ],
+   "localhost": [
+    "127.0.0.1"
+   ],
+   "mapped.example": [
+    "::ffff:10.0.0.1"
+   ],
+   "metadata.google.internal": [
+    "169.254.169.254"
+   ],
+   "rebind.example": [
+    "93.184.216.34",
+    "10.0.0.5"
+   ],
+   "ula.example": [
+    "fd00::5"
+   ],
+   "v6.example": [
+    "::1"
+   ]
+  },
+  "expect": "blocked",
+  "id": "dns-ula-answer",
+  "url": "http://ula.example/"
+ }
+]

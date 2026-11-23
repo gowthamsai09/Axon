@@ -1,0 +1,17 @@
+{
+ "category": "delimiter",
+ "expect": {
+  "forbid_ci": [
+   "<task"
+  ],
+  "outcome": "sanitized",
+  "require": [
+   "ab"
+  ]
+ },
+ "id": "doc-task-nested",
+ "kind": "document",
+ "text": "a<ta<task>sk>b",
+ "text_repeat": 1,
+ "title": "Corpus case"
+}

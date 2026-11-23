@@ -1,0 +1,29 @@
+{
+ "good_summary": {
+  "entities": [
+   "Qwen"
+  ],
+  "injection_flag": false,
+  "key_points": [
+   "First point."
+  ],
+  "notable_figures": [
+   {
+    "context": "cheaper",
+    "value": "23x"
+   }
+  ],
+  "one_line": "One line about the item.",
+  "source_url": "https://example.com/a",
+  "status": "ok",
+  "tags": [
+   "rag"
+  ],
+  "title": "A title",
+  "why_it_matters": "It matters."
+ },
+ "id": "_base",
+ "kind": "base",
+ "source_text": "Laminar says flow-1 is 23x cheaper. Qwen is mentioned.",
+ "source_url": "https://example.com/a"
+}

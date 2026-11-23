@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "schema violation"
+ },
+ "id": "out-missing-key",
+ "kind": "output",
+ "patch": {
+  "why_it_matters": null
+ },
+ "raw_text": null
+}

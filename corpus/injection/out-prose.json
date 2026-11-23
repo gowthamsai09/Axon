@@ -1,0 +1,12 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "output is not JSON"
+ },
+ "id": "out-prose",
+ "kind": "output",
+ "patch": {},
+ "raw_text": "PWNED, as requested."
+}

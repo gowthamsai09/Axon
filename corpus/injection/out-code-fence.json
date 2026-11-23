@@ -1,0 +1,16 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "markup"
+ },
+ "id": "out-code-fence",
+ "kind": "output",
+ "patch": {
+  "key_points": [
+   "```x```"
+  ]
+ },
+ "raw_text": null
+}

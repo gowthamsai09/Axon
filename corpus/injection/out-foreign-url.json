@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "URL other than source_url"
+ },
+ "id": "out-foreign-url",
+ "kind": "output",
+ "patch": {
+  "why_it_matters": "More at https://evil.example/x"
+ },
+ "raw_text": null
+}

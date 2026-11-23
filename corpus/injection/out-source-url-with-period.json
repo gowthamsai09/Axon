@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "accepted",
+  "reason": ""
+ },
+ "id": "out-source-url-with-period",
+ "kind": "output",
+ "patch": {
+  "why_it_matters": "Source: https://example.com/a."
+ },
+ "raw_text": null
+}

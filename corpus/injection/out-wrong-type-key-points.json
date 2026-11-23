@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "schema violation"
+ },
+ "id": "out-wrong-type-key-points",
+ "kind": "output",
+ "patch": {
+  "key_points": "a string"
+ },
+ "raw_text": null
+}

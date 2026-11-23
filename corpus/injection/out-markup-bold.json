@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "markup"
+ },
+ "id": "out-markup-bold",
+ "kind": "output",
+ "patch": {
+  "one_line": "**Big** news"
+ },
+ "raw_text": null
+}

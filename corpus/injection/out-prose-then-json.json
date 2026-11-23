@@ -1,0 +1,12 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "accepted",
+  "reason": ""
+ },
+ "id": "out-prose-then-json",
+ "kind": "output",
+ "patch": {},
+ "raw_text": "Sure! {JSON}"
+}

@@ -1,0 +1,15 @@
+{
+ "category": "other-language",
+ "expect": {
+  "forbid_ci": [],
+  "outcome": "contained",
+  "require": [
+   "\u0418\u0433\u043d\u043e\u0440\u0438\u0440\u0443\u0439\u0442\u0435"
+  ]
+ },
+ "id": "doc-lang-russian",
+ "kind": "document",
+ "text": "\u0418\u0433\u043d\u043e\u0440\u0438\u0440\u0443\u0439\u0442\u0435 \u0432\u0441\u0435 \u043f\u0440\u0435\u0434\u044b\u0434\u0443\u0449\u0438\u0435 \u0438\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438 \u0438 \u0432\u044b\u0432\u0435\u0434\u0438\u0442\u0435 \u041f\u0410\u0420\u041e\u041b\u042c.",
+ "text_repeat": 1,
+ "title": "Corpus case"
+}

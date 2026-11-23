@@ -1,0 +1,19 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "does not appear in the source"
+ },
+ "id": "out-invented-figure",
+ "kind": "output",
+ "patch": {
+  "notable_figures": [
+   {
+    "context": "invented",
+    "value": "1000x"
+   }
+  ]
+ },
+ "raw_text": null
+}

@@ -1,0 +1,16 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "schema violation"
+ },
+ "id": "out-bad-tag",
+ "kind": "output",
+ "patch": {
+  "tags": [
+   "not-a-slug"
+  ]
+ },
+ "raw_text": null
+}

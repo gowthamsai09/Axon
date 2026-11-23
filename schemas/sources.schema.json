@@ -120,6 +120,25 @@
           "default": null,
           "title": "Repos"
         },
+        "skip_weekends": {
+          "default": false,
+          "title": "Skip Weekends",
+          "type": "boolean"
+        },
+        "stale_after_days": {
+          "anyOf": [
+            {
+              "maximum": 30,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stale After Days"
+        },
         "type": {
           "enum": [
             "rss",

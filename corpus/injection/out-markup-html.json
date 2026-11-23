@@ -1,0 +1,16 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "markup"
+ },
+ "id": "out-markup-html",
+ "kind": "output",
+ "patch": {
+  "key_points": [
+   "see <b>this</b>"
+  ]
+ },
+ "raw_text": null
+}

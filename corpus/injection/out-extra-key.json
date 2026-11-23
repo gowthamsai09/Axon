@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "schema violation"
+ },
+ "id": "out-extra-key",
+ "kind": "output",
+ "patch": {
+  "system_prompt": "leaked"
+ },
+ "raw_text": null
+}

@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "source_url differs"
+ },
+ "id": "out-swapped-source-url",
+ "kind": "output",
+ "patch": {
+  "source_url": "https://evil.example"
+ },
+ "raw_text": null
+}

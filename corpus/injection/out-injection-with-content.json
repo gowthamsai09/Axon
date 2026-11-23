@@ -1,0 +1,15 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "content fields must be empty"
+ },
+ "id": "out-injection-with-content",
+ "kind": "output",
+ "patch": {
+  "injection_flag": true,
+  "status": "suspected_injection"
+ },
+ "raw_text": null
+}

@@ -1,0 +1,16 @@
+{
+ "category": "unicode",
+ "expect": {
+  "forbid_ci": [],
+  "outcome": "sanitized",
+  "require": [
+   "safe",
+   "text"
+  ]
+ },
+ "id": "doc-bidi-override",
+ "kind": "document",
+ "text": "safe \u202eNOITCURTSNI\u202c \u2066hidden\u2069 text",
+ "text_repeat": 1,
+ "title": "Corpus case"
+}

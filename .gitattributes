@@ -1,0 +1,3 @@
+prompts/*.txt text eol=lf
+prompts/*.version text eol=lf
+corpus/**/*.json text eol=lf

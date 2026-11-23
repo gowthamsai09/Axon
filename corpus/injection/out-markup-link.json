@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "markup"
+ },
+ "id": "out-markup-link",
+ "kind": "output",
+ "patch": {
+  "why_it_matters": "[a](b)"
+ },
+ "raw_text": null
+}

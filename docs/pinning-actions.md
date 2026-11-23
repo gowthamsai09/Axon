@@ -1,36 +1,17 @@
-# Pinning GitHub Actions to commit SHAs (spec section 10)
+# Pinned GitHub Actions (resolved 2026-11-01)
 
-Every third-party `uses:` line ships as `actions/NAME@<pin-to-commit-sha>`. CI cannot go green
-until each placeholder is replaced with a real 40-character commit SHA. Do this **before your
-first push** to each repo.
+All third-party actions are pinned to commit SHAs in every repo (spec 10.1, Appendix C 76).
+Method: `git ls-remote --tags https://github.com/<action>.git` (peeled `^{}` entries), because
+`api.github.com` rate-limited the unauthenticated sandbox. Commit dates read from shallow clones.
+The checkout and setup-python SHAs equal the pins already in `axon-feed`, which cross-checks the method.
+Not the newest majors on purpose (v7 exists); Dependabot (grouped, weekly) proposes updates.
 
-## 1. Resolve the SHAs (needs `gh`, logged in; run in Git Bash / WSL / macOS / Linux)
+| Action | Tag | Commit SHA | Commit date |
+|---|---|---|---|
+| actions/checkout | v6.1.0 | d23441a48e516b6c34aea4fa41551a30e30af803 | 2026-07-16 |
+| actions/setup-python | v6.3.0 | ece7cb06caefa5fff74198d8649806c4678c61a1 | 2026-06-23 |
+| actions/setup-node | v6.5.0 | 249970729cb0ef3589644e2896645e5dc5ba9c38 | 2026-07-13 |
 
-```bash
-for a in actions/checkout actions/setup-python actions/setup-node; do
-  tag=$(gh api "repos/$a/releases/latest" --jq .tag_name)
-  sha=$(gh api "repos/$a/commits/$tag" --jq .sha)
-  echo "$a $tag $sha"
-done
-```
-
-Without `gh`: `git ls-remote https://github.com/actions/checkout 'refs/tags/v*'`, pick a release tag
-you trust (check the releases page, prefer one at least a couple of weeks old), and for annotated
-tags use the line ending in `^{}`.
-
-## 2. Replace the placeholders (repeat per action; SHA and TAG from step 1)
-
-```bash
-SHA=<40-char sha>; TAG=<tag>
-sed -i -E "s|(uses: actions/checkout)@<pin-to-commit-sha>.*|\1@${SHA}  # ${TAG}|" .github/workflows/*.yml
-```
-(macOS: `sed -i ''`.) Do the same for `actions/setup-python` and `actions/setup-node`.
-The `# TAG` comment lets Dependabot (github-actions ecosystem) keep the pins current.
-
-## 3. Verify
-
-```bash
-grep -rn "pin-to-commit-sha" .github || echo "all pinned"
-```
-The workflow-lint test (`tests/test_workflows.py` / `test/workflows.test.ts`) accepts either
-the placeholder or a 40-hex SHA and rejects floating tags such as `@v4`.
+Every pin is more than 14 days old on the resolution date. To re-resolve or bump, run
+`python scripts/pin_actions.py --check <repo>/.github/workflows` (read-only: reports unpinned lines and
+SHAs that no longer match the table) or edit `PINS` in the script and run it with `--apply`.

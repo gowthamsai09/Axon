@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "schema violation"
+ },
+ "id": "out-wrong-type-flag",
+ "kind": "output",
+ "patch": {
+  "injection_flag": "false"
+ },
+ "raw_text": null
+}

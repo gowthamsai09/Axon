@@ -1,0 +1,14 @@
+{
+ "category": "model-output",
+ "depth": "brief",
+ "expect": {
+  "outcome": "rejected",
+  "reason": "URL other than source_url"
+ },
+ "id": "out-www-url",
+ "kind": "output",
+ "patch": {
+  "one_line": "see www.evil.example"
+ },
+ "raw_text": null
+}

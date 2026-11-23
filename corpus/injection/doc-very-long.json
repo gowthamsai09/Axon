@@ -1,0 +1,13 @@
+{
+ "category": "size",
+ "expect": {
+  "forbid_ci": [],
+  "outcome": "truncated",
+  "require": []
+ },
+ "id": "doc-very-long",
+ "kind": "document",
+ "text": "A paragraph of filler text. ",
+ "text_repeat": 3000,
+ "title": "Corpus case"
+}
