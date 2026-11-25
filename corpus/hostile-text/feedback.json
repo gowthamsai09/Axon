@@ -1,0 +1,423 @@
+[
+ {
+  "expect": "counted",
+  "id": "vote-up",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "one valid vote"
+ },
+ {
+  "expect": "counted",
+  "id": "vote-down-crlf",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:down\r\nitem:0123456789abcdef vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "CRLF line endings"
+ },
+ {
+  "expect": "counted",
+  "id": "ten-votes",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "the maximum"
+ },
+ {
+  "expect": "ignored",
+  "id": "eleven-votes",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up\nitem:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "one over the maximum"
+ },
+ {
+  "expect": "ignored",
+  "id": "trailing-text",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up; rm -rf /",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "text after the vote"
+ },
+ {
+  "expect": "ignored",
+  "id": "extra-line",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up\nplease also visit evil.example",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "an extra prose line"
+ },
+ {
+  "expect": "ignored",
+  "id": "html-after",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up\n<script>x</script>",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "html after the vote"
+ },
+ {
+  "expect": "ignored",
+  "id": "uppercase-id",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:AAAAAAAAAAAAAAAA vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "uppercase hex"
+ },
+ {
+  "expect": "ignored",
+  "id": "short-id",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:abc vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a short id"
+ },
+ {
+  "expect": "ignored",
+  "id": "long-id",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a 17 character id"
+ },
+ {
+  "expect": "ignored",
+  "id": "bad-vote",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:sideways",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a vote that is not up or down"
+ },
+ {
+  "expect": "ignored",
+  "id": "zero-width-in-id",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaa\u200baaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a zero width space in the id"
+ },
+ {
+  "expect": "ignored",
+  "id": "fullwidth-colon",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item\uff1aaaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a fullwidth colon"
+ },
+ {
+  "expect": "ignored",
+  "id": "empty-body",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "an empty body"
+ },
+ {
+  "expect": "ignored",
+  "id": "whitespace-body",
+  "issue": {
+   "author_association": "OWNER",
+   "body": " \n \n",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "only whitespace"
+ },
+ {
+  "expect": "ignored",
+  "id": "oversize-body",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a body over the cap"
+ },
+ {
+  "expect": "ignored",
+  "id": "body-not-text",
+  "issue": {
+   "author_association": "OWNER",
+   "body": null,
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a body that is not text"
+ },
+ {
+  "expect": "ignored",
+  "id": "body-number",
+  "issue": {
+   "author_association": "OWNER",
+   "body": 12345,
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a numeric body"
+ },
+ {
+  "expect": "ignored",
+  "id": "stranger",
+  "issue": {
+   "author_association": "NONE",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "an author with no association"
+ },
+ {
+  "expect": "ignored",
+  "id": "contributor",
+  "issue": {
+   "author_association": "CONTRIBUTOR",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a contributor is not enough"
+ },
+ {
+  "expect": "ignored",
+  "id": "first-timer",
+  "issue": {
+   "author_association": "FIRST_TIME_CONTRIBUTOR",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a first-time contributor"
+ },
+ {
+  "expect": "counted",
+  "id": "collaborator",
+  "issue": {
+   "author_association": "COLLABORATOR",
+   "body": "item:aaaaaaaaaaaaaaaa vote:down",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a collaborator counts"
+ },
+ {
+  "expect": "ignored",
+  "id": "bot-author",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": {
+    "type": "Bot"
+   }
+  },
+  "note": "a bot is ignored"
+ },
+ {
+  "expect": "ignored",
+  "id": "no-user",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "open",
+   "user": null
+  },
+  "note": "no user object"
+ },
+ {
+  "expect": "ignored",
+  "id": "pull-request",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "pull_request": {
+    "url": "x"
+   },
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a pull request"
+ },
+ {
+  "expect": "ignored",
+  "id": "closed-issue",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": 7,
+   "state": "closed",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "an already closed issue"
+ },
+ {
+  "expect": "ignored",
+  "id": "number-bool",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": true,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a boolean number"
+ },
+ {
+  "expect": "ignored",
+  "id": "number-zero",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": 0,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "number zero"
+ },
+ {
+  "expect": "ignored",
+  "id": "number-negative",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": -4,
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a negative number"
+ },
+ {
+  "expect": "ignored",
+  "id": "number-text",
+  "issue": {
+   "author_association": "OWNER",
+   "body": "item:aaaaaaaaaaaaaaaa vote:up",
+   "number": "7",
+   "state": "open",
+   "user": {
+    "type": "User"
+   }
+  },
+  "note": "a text number"
+ }
+]

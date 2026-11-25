@@ -120,6 +120,74 @@
       "title": "Delivery",
       "type": "object"
     },
+    "Embeddings": {
+      "additionalProperties": false,
+      "description": "Optional semantic matching (Phase 6, Appendix C 96). Off by default. The key is the\nEMBED_API_KEY secret, never part of this file. DeepSeek has no embeddings endpoint.",
+      "properties": {
+        "base_url": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Base Url",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "max_items": {
+          "default": 50,
+          "maximum": 200,
+          "minimum": 1,
+          "title": "Max Items",
+          "type": "integer"
+        },
+        "min_similarity": {
+          "default": 0.35,
+          "exclusiveMaximum": 1.0,
+          "minimum": 0.0,
+          "title": "Min Similarity",
+          "type": "number"
+        },
+        "model": {
+          "default": "",
+          "maxLength": 100,
+          "title": "Model",
+          "type": "string"
+        },
+        "provider": {
+          "default": "huggingface",
+          "enum": [
+            "huggingface",
+            "openai_compatible"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "weight": {
+          "default": 0.25,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "title": "Embeddings",
+      "type": "object"
+    },
+    "Feedback": {
+      "additionalProperties": false,
+      "description": "Feedback votes nudge per-topic weights (spec 6.9, Phase 6, Appendix C 98).",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "title": "Feedback",
+      "type": "object"
+    },
     "Interests": {
       "additionalProperties": false,
       "properties": {
@@ -250,6 +318,31 @@
       ],
       "title": "Summarizer",
       "type": "object"
+    },
+    "Trends": {
+      "additionalProperties": false,
+      "description": "Weekly trends section (Phase 6, Appendix C 97): deterministic; labels are opt-in.",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "llm_labels": {
+          "default": false,
+          "title": "Llm Labels",
+          "type": "boolean"
+        },
+        "max_clusters": {
+          "default": 5,
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Max Clusters",
+          "type": "integer"
+        }
+      },
+      "title": "Trends",
+      "type": "object"
     }
   },
   "$id": "https://raw.githubusercontent.com/gowthamsai09/Axon/main/schemas/profile.schema.json",
@@ -262,6 +355,12 @@
     "delivery": {
       "$ref": "#/$defs/Delivery"
     },
+    "embeddings": {
+      "$ref": "#/$defs/Embeddings"
+    },
+    "feedback": {
+      "$ref": "#/$defs/Feedback"
+    },
     "interests": {
       "$ref": "#/$defs/Interests"
     },
@@ -270,6 +369,9 @@
     },
     "summarizer": {
       "$ref": "#/$defs/Summarizer"
+    },
+    "trends": {
+      "$ref": "#/$defs/Trends"
     },
     "version": {
       "const": 1,

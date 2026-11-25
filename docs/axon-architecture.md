@@ -4,7 +4,7 @@
 **Model:** Git-native, Bring-Your-Own-Key (BYOK), Mode A (one private repo per user)
 **Hosting:** GitHub (Actions, Pages, App) plus Cloudflare Workers (gateway)
 **Protocols:** A2A (Agent2Agent) and MCP, both as thin adapters over one core
-**Version:** 1.6 (Phase 4 complete 2026-10-29, built and verified locally against mocks and under workerd; Appendix C items 1 to 75: Phase 0 deltas 1 to 14, collector findings 15 to 20, Phase 1 deltas 21 to 28, Phase 2 deltas 29 to 44, Phase 3 deltas 45 to 61, Phase 4 deltas 62 to 75)
+**Version:** 1.7 (Phase 6 built 2026-11-25 to 2026-11-26, verified locally against mocks only; Appendix C items 1 to 105: Phase 0 deltas 1 to 14, collector findings 15 to 20, Phase 1 deltas 21 to 28, Phase 2 deltas 29 to 44, Phase 3 deltas 45 to 61, Phase 4 deltas 62 to 75, Phase 5 deltas 76 to 87, Phase 6 deltas 88 to 105; natural-language Tier 3 (P6.8) deferred, item 102)
 
 > Free-tier limits and protocol specs change often. Every item that needs verification is listed in [Appendix B](#appendix-b-verify-before-you-build). Check them before you commit to a design detail.
 
@@ -360,10 +360,24 @@ delivery:
   language: en
 summarizer:
   provider: deepseek          # deepseek | huggingface | openai_compatible
-  model: deepseek-v4-flash   # deepseek-chat and deepseek-reasoner were retired 2026-07-24
+  model: deepseek-flash      # deepseek-chat and deepseek-reasoner were retired 2026-07-24 (Appendix C 94)
   fallback_provider: ""       # deepseek | huggingface | "" (none); set together with fallback_model
   fallback_model: ""          # required when fallback_provider is set
   base_url: ""                # only for openai_compatible; must be https
+embeddings:                   # optional, off by default (Appendix C 96)
+  enabled: false
+  provider: huggingface       # huggingface | openai_compatible (DeepSeek has no embeddings)
+  model: ""                   # required when enabled
+  base_url: ""                # only for openai_compatible; https, no query
+  weight: 0.25                # 0 to 1
+  min_similarity: 0.35        # 0 up to (not including) 1
+  max_items: 50               # 1 to 200 candidates embedded per run
+trends:                       # optional, off by default; weekly digests only (Appendix C 97)
+  enabled: false
+  llm_labels: false           # needs enabled; uses your summarizer key
+  max_clusters: 5             # 1 to 10
+feedback:                     # optional, off by default (Appendix C 98)
+  enabled: false
 agent_access:
   allow_inbound_agents: true
   allowed_modes: [data, summary, digest]   # digest = Tier 3
@@ -383,6 +397,10 @@ Validation rules beyond the types shown above:
   `extra_rss` at most 20 http(s) URLs without credentials; a keyword cannot be both included and excluded;
   `max_items` 1 to 25; `max_tier3_runs_per_day` 1 to 20 (default 5).
 - `allow_owner_channel` is a boolean, default `false`; older profiles without it stay valid (Appendix C 62).
+- `embeddings`, `trends` and `feedback` are optional sections; a profile without them stays valid and means
+  "off" (Appendix C 96 to 98). `trends.llm_labels` needs `trends.enabled`. `embeddings.provider` is never
+  `deepseek`; `embeddings.model` is required when enabled; `embeddings.base_url` is only for
+  `openai_compatible` (https, no query).
 
 ### 6.2 Secrets (set by the user in GitHub, never in the repo)
 
@@ -570,13 +588,23 @@ jobs:
 
 ### 6.8 Onboarding (three entry points, one output: `profile.yaml`)
 
-1. **Issue Form** (`onboarding.yml`): the user fills a form. `onboard.yml` parses it, validates it, commits `profile.yaml` and generates the UTC cron.
-2. **CLI:** `python -m digest.cli init` asks the questions interactively.
+1. **Issue Form** (`.github/ISSUE_TEMPLATE/onboarding.yml`): the repository owner fills a form. `onboard.yml`
+   runs `python -m digest.cli onboard`, which cuts the Issue body into sections by the form's fixed labels,
+   checks every answer against an allow-list or a strict shape, builds the `Profile` with the same pydantic
+   model the pipeline uses, commits `profile.yaml` and replies with the UTC cron line and the secret *names*
+   to add. The reply is built from fixed text and validated values only; it never repeats what was typed.
+   A workflow cannot edit workflow files, so the owner pastes the cron line into `digest.yml` (Appendix C 91,
+   101). Personal-account repositories only: the Issue author and the editor must equal the repository owner.
+2. **CLI:** `python -m digest.cli init` asks the questions interactively (including the optional extras).
 3. **Chat onboarding agent:** uses the prompt in section 13.2 and produces the same YAML. The user pastes the YAML into the repo. **The chat must never ask for API keys.**
 
 ### 6.9 Feedback loop
 
-Each digest item has 👍 / 👎 links that open a prefilled GitHub Issue on the user's repo, for example `?title=feedback&body=item:<id>%20vote:up`. A weekly job reads these issues and nudges per-topic weights in `state/weights.json`. No backend is needed.
+Off by default (`feedback.enabled`). When on, each item in the HTML email has thumbs links that open a prefilled
+GitHub Issue on the user's repo (`item:<16 hex> vote:up|down`). The `feedback` step of `digest.yml` reads open
+Issues from `api.github.com` with `GITHUB_TOKEN`, counts only Issues whose author GitHub reports as `OWNER` or
+`COLLABORATOR`, a person, and whose whole body is 1 to 10 strict vote lines, closes them, and nudges per-topic
+weights in `state/weights.json` (bounded, decaying, idempotent). No backend is needed (Appendix C 98).
 
 ---
 
@@ -1069,8 +1097,8 @@ items, 100 warnings.
 | **2: User pipeline MVP** (done 2026-10-23) | Template repo, `profile.yaml`, summarizer router (DeepSeek and HF), email delivery, state branch, `digest.yml`; verified locally on the real feed and real DeepSeek; **real email is verified at the first push** (the development network blocks SMTP) |
 | **3: Gateway Tier 1 and 2** (done 2026-10-28) | Worker, Agent Card, `message/send` for data and summary, MCP `tools/list` and `tools/call`, rate limits; verified locally in workerd; live provider and deployment checks at the first push |
 | **4: Tier 3** (done 2026-10-29) | GitHub App access, OIDC registration, token issue and revoke, dispatch, status mapping, result files, `owner_channel` flag; verified against mocks and under workerd; **real GitHub, KV and live provider checks at the first push** (Appendix C 62 to 75) |
-| **5: Hardening** | Injection corpus, SSRF suite, eval set, keepalive, failure notices, branch rulesets, Action pinning, hub-level prompt hash check, docs |
-| **6: Polish** | Telegram, Slack and RSS channels, embeddings-based matching, weekly "trends" clustering, feedback-driven weights, onboarding issue form; optionally the A2A v1.0 migration and MCP OAuth metadata |
+| **5: Hardening** (done 2026-11-22) | Injection corpus, SSRF suite, eval set, keepalive, failure notices, repo hardening docs, Action pinning, hub-level prompt hash check (Appendix C 76 to 87) |
+| **6: Polish** (built 2026-11-26, mocks only) | Telegram, Slack and Atom channels, optional embeddings matching, weekly trends, feedback weights, onboarding issue form and `onboard.yml`, hostile-text corpus, docs (Appendix C 88 to 105). Deferred by decision: natural-language Tier 3 (102), A2A v1.0 (91 D1), MCP OAuth metadata (91 D2) |
 
 ### 12.1 Development mode (local-only)
 
@@ -1184,6 +1212,7 @@ Step 2. Topics: Offer the topic list below and let them pick several. If they de
 Step 3. Entities and sources: Companies, models, libraries, or GitHub repos to follow (use "github:owner/repo" for repos). Any extra RSS feeds. Keywords to include or exclude.
 Step 4. Delivery: Channel (email, telegram, slack, rss), frequency (daily or weekly), preferred local send time, timezone (IANA name, for example Asia/Kolkata), maximum items per digest (1 to 25), and language.
 Step 5. Summarizer: Provider (deepseek, huggingface, or openai_compatible), model name, optional fallback. Remind them the key goes in GitHub Secrets and that a dedicated key with a spending limit is recommended.
+Step 5b. Optional extras (all off by default; ask once whether they want any, and skip them if not): semantic matching with embeddings (provider huggingface or openai_compatible, a model name, an optional weight; the key goes in the EMBED_API_KEY secret, and DeepSeek has no embeddings), a weekly Trends section (shown only in weekly digests; optional one-line AI labels use their summarizer key), and feedback weights (thumbs up/down links in the digest nudge their topic weights).
 Step 6. Agent access: Whether other agents may call their digest (allow_inbound_agents), which modes are allowed (data, summary, digest), the daily cap for digest runs (1 to 20, default 5), and whether agent-started runs may also send the digest through their own delivery channel (allow_owner_channel, default false). Explain in one sentence that "digest" lets an authorized agent start a run in their own repository using their own key.
 Step 7. Confirm: Show a short human-readable recap and ask for approval or edits.
 Step 8. Output: Produce the final profile.yaml in a single block, followed by the setup checklist.
@@ -1207,6 +1236,7 @@ VALIDATION RULES (check before output)
 - version is 1. max_items is an integer 1 to 25. depth is one of headlines, brief, detailed. channel is one of email, telegram, slack, rss. frequency is daily or weekly. provider is one of deepseek, huggingface, openai_compatible. base_url is set only for openai_compatible and must start with https://.
 - timezone is a valid IANA name. language is a short ISO code.
 - summarizer.model is never empty: ask for it. fallback_provider and fallback_model are either both set or both empty. fallback_provider is deepseek or huggingface, never openai_compatible. weekday is required when frequency is weekly and must be omitted when daily.
+- embeddings.enabled, trends.enabled, trends.llm_labels and feedback.enabled are booleans and default to false. trends.llm_labels needs trends.enabled. embeddings.provider is huggingface or openai_compatible, never deepseek. embeddings.model is required when embeddings are enabled. embeddings.base_url is set only for openai_compatible, must start with https:// and must have no query. embeddings.weight is 0 to 1, embeddings.min_similarity is 0 up to (not including) 1, embeddings.max_items is 1 to 200, trends.max_clusters is 1 to 10.
 - If the user's answers conflict or are missing, ask a follow-up instead of guessing.
 
 OUTPUT FORMAT
@@ -1235,6 +1265,20 @@ summarizer:
   fallback_provider: ""
   fallback_model: ""
   base_url: ""
+embeddings:
+  enabled: false
+  provider: huggingface
+  model: ""
+  base_url: ""
+  weight: 0.25
+  min_similarity: 0.35
+  max_items: 50
+trends:
+  enabled: false
+  llm_labels: false
+  max_clusters: 5
+feedback:
+  enabled: false
 agent_access:
   allow_inbound_agents: true
   allowed_modes: [data, summary, digest]
@@ -1245,7 +1289,7 @@ If frequency is weekly, add the line "  weekday: mon" (one of mon, tue, wed, thu
 
 Then output:
 - "cron (UTC)": the computed cron expression and one sentence explaining it.
-- A numbered setup checklist: (1) commit profile.yaml, (2) add the needed GitHub Secrets by name only, (3) update the cron line in digest.yml, (4) run the digest workflow manually once, (5) optionally install the GitHub App and run register.yml if they enabled the "digest" mode.
+- A numbered setup checklist: (1) commit profile.yaml, (2) add the needed GitHub Secrets by name only (EMBED_API_KEY too if embeddings are enabled), (3) update the cron line in digest.yml, (4) run the digest workflow manually once, (5) optionally install the GitHub App and run register.yml if they enabled the "digest" mode.
 Keep the tone friendly and concise. Do not output anything that looks like a secret value.
 ```
 
@@ -1411,7 +1455,7 @@ These change over time. Confirm each in current official documentation. Status a
 | 14 | **arXiv RSS semantics** | Verified on captures 2026-10-16 (Appendix C 15) |
 | 15 | **Reddit API terms** if Reddit is ever revisited | Not needed while Reddit is excluded |
 
-## Appendix C: Changes accepted after each phase (v1.1 to v1.6)
+## Appendix C: Changes accepted after each phase (v1.1 to v1.7)
 
 Every deviation, decision or discovered fact that changes behaviour is a numbered item here (guidelines section 7). "Observed" means run in a build sandbox or on the maintainer's machine; "mocked only" and "verified live" are different claims. Nothing has yet run against real GitHub Actions, Pages, SMTP, a deployed Worker, real KV or a live LLM call through the Worker.
 
@@ -1581,14 +1625,280 @@ Every deviation, decision or discovered fact that changes behaviour is a numbere
 
 75. **Rate limits (spec 7.7).** New `RL_TIER3` binding (30 per 60 s, `namespace_id` 1003) and an in-isolate fallback with the same limits, keyed by **token id** (checked after authentication); the public per-IP limit (60 per 60 s) also applies to every route including `/register` and `/tokens`. A limited request answers 429 `Retry-After: 60` and makes no GitHub call beyond what the limiter allowed (tested).
 
-### Open items after Phase 4
+### Phase 5 (items 76 to 87)
 
-- **First-push checks (Tier 3):** job summary masking of the issued token (64); a real `workflow_dispatch` plus run-title lookup lag (68); KV revoke propagation and quotas (65); real CPU and subrequest counts; a real Tier 2 call under workerd (74); real GitHub accepting the App JWT, installation tokens and OIDC tokens.
-- **Protocol work:** migrate the card and adapters to A2A v1.0 as one recorded change (71); MCP OAuth with protected resource metadata (72), earlier if a client requires it.
+76.  **Action pinning (2026-11-01).** All third-party actions pinned to commit SHAs in every repo (checkout v6.1.0, setup-python v6.3.0, setup-node v6.5.0). Resolved with `git ls-remote` on github.com because api.github.com rate-limited the unauthenticated sandbox; checkout and setup-python SHAs equal the pins already in axon-feed. Table and checker: `docs/pinning-actions.md`, `scripts/pin_actions.py`.
+    
+77. **Shared injection corpus.** `corpus/injection/*.json` (38 hostile documents, 1 hostile-metadata case, 19 model outputs, each with an expected outcome) generated by `scripts/make_injection_corpus.py`, checked for drift by hub tests, consumed by the template and gateway against their real sanitizer, prompt assembly and validator. CI sets `REQUIRE_HUB_CORPUS=1`.
+
+78. **Template secret-echo guard (closes the open point in item 58).** Model output containing a configured key (primary or fallback, at least 6 characters) is invalid output: one retry, then the item degrades to the extractive snippet. The retry reminder and every message never contain the value. Also found by the corpus: the template accepted the string "false" for `injection_flag`; it now requires a real boolean (`StrictBool`), matching the gateway.
+79. **Hub ruff config.** `*.md` is excluded from `ruff format` (the spec's code samples were being rewritten).
+80. **Keepalive (spec 6.7) and verified GitHub facts (2026-11-08).** (a) Scheduled workflows are auto-disabled after 60 days without repository activity in PUBLIC repositories only; private repositories (the intended setup) are not, so `keepalive.yml` is a precaution; a disabled keepalive cannot re-enable itself. (b) `workflow_dispatch` allows 25 inputs and a 65,535 character payload; Tier 3 sends 2 inputs under 4 KB (item 68 unchanged). (c) `GITHUB_TOKEN` cannot be granted the `workflows` permission (a PAT or App scope), so `onboard.yml` cannot edit `digest.yml`: decision D4 stands (commit profile.yaml, print the cron line). (d) Creating issues with `GITHUB_TOKEN` needs `issues: write`; with an explicit `permissions:` block every unlisted scope is none. (e) Keepalive uses `actions: write` only. NOT verified live: that `gh workflow enable` succeeds with the job token on an already-enabled workflow (first-push check).
+81. **Gateway deploy workflow (spec 7.2) and a deliberate test change.** `deploy.yml` runs after CI succeeds for a same-repository push to main, in the `production` environment (set required reviewers in the repo settings), after `scripts/check-deploy-config.js` refuses placeholder or local-development configuration (PUBLIC_URL, FEED_BASE, KV id, forbidden override variables, observability). The Cloudflare credentials exist only in the final step. The Phase 0 rule "no wrangler in any workflow" is relaxed deliberately in `test/workflows.test.ts`: `wrangler deploy` only in deploy.yml, `wrangler deploy --dry-run` only in ci.yml, Cloudflare secrets only in deploy.yml. Token scope (Cloudflare docs, 2026-11-08): Account, Workers Scripts, Edit on the one account; a KV binding permission may also be needed (unverified, add it only if the first deploy asks). Rollback: `npx wrangler rollback`. Not run: any real deploy.
+82. **Canonical prompts in the hub (closes the open point in item 45).** `prompts/summarizer_system.txt`, `prompts/onboarding_system.txt` and `prompts/summarizer_system.version` (`p-56a22986b1`, the first 10 hex of the sha256 of the summarizer prompt) are the canonical copies; `scripts/prompt_id.py` computes the id. The template (`scripts/check_prompt_sync.py`) and the gateway (`npm run prompt:hub -- <hub dir>`) compare their own copies byte for byte with the hub and fail on drift, in CI and in tests (`REQUIRE_HUB_PROMPTS=1` makes a missing hub a failure instead of a skip). The prompt text is unchanged, so the id is unchanged.
+83. **Stale-source Issues (spec 11.1).** `sources.yaml` entries may set `stale_after_days` (1 to 30, default 3) and `skip_weekends` (true for the three arXiv feeds, which are empty at weekends). `pipeline/health.py` counts consecutive empty days into `store.json` (`Store.health`); `meta.json` source rows carry the staleness. `scripts/sync_issues.py` (own step in `collect.yml`, `issues: write`, `continue-on-error`) opens at most one Issue per stale source, titled "Stale source: <id>", label `source-stale`, closes it on recovery, does not reopen within 3 days of a manual close, creates at most 10 Issues per run, and reports GitHub errors as an HTTP status only. Mocked API tests only; real Issue creation is a first-push check.
+84. **SSRF suite and fixes.** Shared URL corpus `corpus/ssrf/urls.json` (88 cases: scheme, ipv4, ipv6, numeric host forms, host syntax, userinfo, port, dns, allowed), generated by `scripts/make_ssrf_corpus.py`. Holes found and fixed: numeric hosts that are not a canonical IP (decimal, octal, hex, short forms, fullwidth digits) are refused as non-canonical (template and feed); invalid ports and credentials in the netloc are refused; a total time limit of 30 seconds per fetch (template `SafeFetcher`, feed `Fetcher`); an invalid redirect `Location` is a fetch error, not a crash; a non-public IPv4-mapped IPv6 address is refused. Feed behaviour kept: a host that does not resolve locally is not refused (proxy networks). Gateway: `FEED_BASE` and `PUBLIC_URL` as IP literals are refused (the gateway still never fetches a caller-supplied URL). DNS rebinding is simulated through the injected resolver only; the real window between check and connect remains (documented in `safe_http.py`).
+85. **Evaluation harness (spec 11.3).** Template `evals/`: strict case schema, scorers (valid output through the real validation, status, length by depth, numbers grounded in the source, forbidden terms, required-term coverage, injection flag), `python -m evals.run replay` (offline, used in tests) and `live` (your key, real router, token usage reported, exit 0/1/2, report holds case ids and counts only). 12 seed cases: 10 from the real feed fixtures, 2 synthetic injection cases. **Their stored answers are hand-written reference answers, not model output**, so replay proves the harness and not any model; `live` has never run against a real provider. The human-checked set of 30 to 50 cases is the maintainer's to complete (`evals/README.md` has the procedure).
+86. **Failure notices review.** `notify-failure` accepts a run link only if it is https, on the repository host (`GITHUB_SERVER_URL`, default github.com), without credentials, whitespace or control characters, at most 300 characters; otherwise the e-mail has no link (the old rule accepted any http(s) URL). Tests assert that notices, warnings, `last_run.json`, outbox files and the digest never contain secrets or model text, using unique strings. See `docs/notices-review.md`.
+87. **Repo hardening docs and npm audit (not run).** `docs/repo-hardening.md` (rulesets, push protection, environment, rotation) and `docs/npm-audit.md` are procedures; nothing in them has been executed. Plan-dependent features (push protection and rulesets on private repos, environment reviewers) are marked "check your plan". The sandbox could not produce a fresh `npm audit` (npm failed to build a lockfile), so the dev-tooling findings from Phase 3 and 4 are unchanged and unreviewed.
+
+### Phase 6 (items 88 to 105)
+
+88. **Telegram delivery (P6.1), 2026-11-25.**
+    - **Verified (official Bot API pages):** `sendMessage` text is 1 to 4096 characters *after
+      entities parsing*; `link_preview_options` exists and its `is_disabled` field is a Boolean;
+      in MarkdownV2 any character with code 1 to 126 can be escaped with a preceding `\`, and `\`
+      itself must be escaped; every response has a Boolean `ok`, failures carry `description` and
+      an integer `error_code`, and some failures carry `parameters` (type ResponseParameters)
+      whose optional integer `retry_after` is the number of seconds to wait after flood control.
+    - **Design.** One fixed host (`api.telegram.org`), `POST /bot<token>/sendMessage`, JSON body
+      `chat_id`, `text`, `parse_mode=MarkdownV2`, `link_preview_options.is_disabled=true`.
+      The existing `render_telegram` output is split on item boundaries into messages of at most
+      4000 UTF-16 units of *escaped* text (an upper bound of what Telegram counts after parsing).
+      A line that is too long on its own is replaced by `...`, never cut (a cut could split an
+      escape or a link). `chat_id` must be a number or `@channelname`; a number is sent as an
+      integer. The token must look like `digits:letters` (ASCII only, 20 to 100 characters after
+      the colon): this is a character-set guard so the token cannot change the URL, not a claim
+      about Telegram's token format, which the API pages do not define.
+    - **Errors** (never repeat any response text): 401 and 404 name `TELEGRAM_BOT_TOKEN`; 403
+      says the bot may not post to the chat; 400 names `TELEGRAM_CHAT_ID`; 429 waits for
+      `parameters.retry_after` (capped at 30 s; a missing, non-numeric or boolean value falls
+      back to 1 s, 2 s, 4 s backoff); 5xx and transport errors retry; three attempts in total.
+      A 400 whose description contains "parse entities" is resent once as plain text (escapes
+      removed) so an unparseable message still arrives. Redirects are never followed. A second
+      message waits 1 s after the first.
+    - **Known trade-offs.** A request that times out after Telegram accepted it can be sent twice
+      on retry. If message 2 of 3 fails, message 1 is already delivered, the items are not marked
+      seen, and the next run sends the digest again; the error says how many were sent.
+    - **Not verified:** Telegram's per-chat and per-second message limits (the official page tells
+      bots to handle errors with retries and not to hard-code limits).
+
+89. **Slack delivery (P6.2), 2026-11-25.**
+    - **Verified (official incoming-webhook and rate-limit pages):** the URL looks like
+      `https://hooks.slack.com/services/T.../B.../<secret>`; success is HTTP 200 with the text
+      `ok`; failure bodies are short strings (`invalid_payload`, `no_text`, `no_service`,
+      `channel_is_archived`, `action_prohibited`, ...) with codes such as 400, 403, 404 and 410
+      (410 for an archived channel is from Slack's 2016 changelog); the URL contains a secret and
+      must not be shared or committed; posting is about one message per second per channel;
+      `&`, `<` and `>` are the characters to escape in text; clients should keep a message under
+      4,000 characters (a third-party summary of Slack's docs adds that Slack truncates above
+      40,000; not read on an official page).
+    - **Design.** Payload is `{"text": ...}` and nothing else: the webhook page documents `text`,
+      `blocks` and `attachments` only, and does not document `mrkdwn`, `unfurl_links` or
+      `unfurl_media` for webhooks, so they are not sent (unknown fields could make Slack answer
+      `invalid_payload`). The URL must match the documented shape exactly (anchored, ASCII,
+      `https://hooks.slack.com/services/T<id>/B<id>/<16 to 64 letters or digits>`). The GovSlack
+      domain (`slack-gov.com`) and the shorter OAuth variant are *not* accepted. Messages are at
+      most 3500 UTF-16 units.
+    - **Rendering.** Untrusted text becomes one line, `&`, `<`, `>` are escaped (so no `<!channel>`,
+      `<@U...>` or link markup can be formed), and `*`, `~` and `` ` `` are replaced by look-alike
+      characters because mrkdwn has no escape for them. A link is `<url|label>`: in the URL,
+      spaces, control characters, `<`, `>` and `|` are percent-encoded and `&` becomes `&amp;`;
+      in the label a `|` becomes `¦`. Retries, redirects and partial-send behaviour are the
+      same as item 88 (a 429 honours `Retry-After` when it is 1 to 4 ASCII digits).
+    - **Not verified:** whether Slack unfurls links in webhook posts (the page is silent); the
+      maximum webhook text length (the page states none). A community report says a webhook post
+      above about 13,100 characters returns 200 but never appears; that is why chunks stay at 3500
+      and why a dropped message cannot be detected by the code (third-party, not verified).
+
+90. **Shared chat helpers and three hardening fixes found while building.**
+    `digest/delivery/common.py` holds the UTF-16 length, chunking, wait rule and the retrying
+    POST used by both channels. The fixes: (a) `render.http_url` now also rejects any URL that
+    contains whitespace or control characters (it used to pass them to the email, Telegram and
+    Slack renderers; a newline or space inside a link breaks Markdown or mrkdwn); (b) every
+    validator uses `[0-9]` and `isascii()` because `\d` and `str.isdigit()` accept non-ASCII
+    digits (`int()` even raises on some); (c) `unreachable` errors name the exception class only
+    and drop the exception chain, because the request URL (which holds the bot token or webhook)
+    appears in httpx error text. Each rule has a mutation in `scripts/mutation_sanity.py`.
+
+91. **Decisions D1 to D8 (recorded 2026-11-25).**
+    - **D1 A2A v1.0 migration:** deferred; adapters stay on 0.3.0. **D2 MCP OAuth metadata:**
+      deferred; static bearer tokens stay.
+    - **D3 RSS location:** `rss/feed.xml` (Atom) on the `state` branch, no Pages. **Verified:**
+      on GitHub Free, Pages is available for public repositories only; private repositories need
+      a paid plan (and a Pages site is public by default). The file is readable by people with
+      read access to the private repo; an ordinary feed reader cannot authenticate to it, so the
+      feed is for people who can use a token or who copy the file.
+    - **D4 Onboarding and cron:** `onboard.yml` commits `profile.yaml` and comments the exact cron
+      line to paste. **Verified:** the `GITHUB_TOKEN` permission list has no `workflows`
+      permission, so it cannot edit `.github/workflows/*`; events caused by `GITHUB_TOKEN` do not
+      start new workflow runs (so a workflow cannot chain to another through it).
+      **Hourly gate, numbers:** GitHub Free includes $12 of compute per month for private
+      repositories; a standard Linux 2-core runner costs $0.006 per minute, so $12 is 2,000
+      minutes; each job is rounded up to a whole minute. A gate that starts every hour is 720
+      jobs per month, at least 720 minutes (36% of the allowance) before any real work, against
+      about 30 to 60 minutes for one run per day (an estimate: 1 to 2 billed minutes per run). **Decision:** do not ship an hourly gate;
+      document the daily cron and the numbers.
+    - **D5 Embeddings provider:** a generic OpenAI-compatible `/embeddings` client with a
+      user-chosen base URL, model and key, behind the SSRF guard. **Verified:** DeepSeek's
+      documentation and pricing list chat models only and no embeddings endpoint, so DeepSeek is
+      not used for embeddings. Hugging Face documents a feature-extraction task in Inference
+      Providers, and an OpenAI-compatible `/v1/embeddings` on Text Embeddings Inference and
+      Inference Endpoints, where `dimensions` and `encoding_format` exist only on the
+      OpenAI-compatible form. **Not verified (Stage 2 must check before coding):** model ids,
+      dimensions, input and batch limits, price or free allowance, and whether the Hugging Face
+      router serves `/v1/embeddings`.
+    - **D6 Stale threshold:** 3 consecutive empty days, weekday-aware for arXiv (as built in
+      Phase 5). **D7 Feedback weights:** bounded, decaying, owner-only. **D8 Trends:**
+      deterministic; the LLM label is optional and off by default.
+
+92. **Open question: DeepSeek model name.** DeepSeek's documentation (dated 2026-11-25) now names
+    the model `deepseek-flash` (served by DeepSeek-V4.1-Flash-1017 since 2026-10-17). The legacy
+    `deepseek-v4-flash` is still accepted but described as retired and served by the new model.
+    The template default (`DEFAULT_MODELS["deepseek"]` in `digest/cli.py`) is still
+    `deepseek-v4-flash`. Nothing was changed: the model name is part of every summary cache key
+    and test, so changing it re-summarizes everything. Decide before the first push; verify live.
+
+93. **Facts recorded now for later stages (2026-11-25).**
+    - **Atom (Stage 2):** a feed must contain exactly one `id`, one `title` and one `updated`;
+      it must have an `author` unless every entry has one; a `link rel="self"` is recommended;
+      dates are RFC 3339 (`2003-12-13T18:30:02Z`). Entry-level rules and id uniqueness are to be
+      re-read in RFC 4287 before `rss.py` is written.
+    - **Issue forms (Stage 4):** element types are `checkboxes`, `dropdown`, `input`, `markdown`,
+      `textarea` (newer docs also list `upload`); ids must be unique; at least one non-markdown
+      field is required; without an `id` the label is turned into one. The exact issue-body format
+      produced by a form is to be verified before the parser is written.
+
+
+94. **DeepSeek default is now `deepseek-flash` (resolves item 92).** Maintainer decision
+    2026-11-25: call the current name directly instead of a legacy alias that is re-routed.
+    Changed: `profile.yaml`, `DEFAULT_MODELS` in `digest/cli.py`, and the thinking-disabled
+    branch in `summarizers/deepseek.py` (prefix `deepseek-flash` joins `deepseek-v4`). Every
+    summary cache key changes once. The gateway default followed in item 103.
+    **Not verified:** that `deepseek-flash` accepts `thinking: {"type": "disabled"}`.
+
+95. **Atom delivery (P6.3, decisions D3 and D4).** Channel `rss` appends one entry per digest to
+    `rss/feed.xml` on the `state` branch (no Pages). Entries live in `rss/entries.json` and the
+    XML is rebuilt every run, so an old feed file is never parsed. Entry id =
+    `uuid5(feed key, day, sorted item ids)`: a rerun replaces its entry. Content is
+    `type="text"`, escaped by the serializer, stripped of characters XML 1.0 cannot carry,
+    capped (title 200, content 20 000, 50 entries). The `self` link points at
+    `raw.githubusercontent.com/<repo>/state/rss/feed.xml` and is only written for
+    `https://github.com` with a valid `owner/name`. D4: the schedule stays once a day.
+
+96. **Optional embeddings (P6.4, D5).** Off by default. Providers: `huggingface` (fixed host
+    `router.huggingface.co`, validated model id) and `openai_compatible` (`<base_url>/embeddings`,
+    https, no query, SSRF guard). DeepSeek has no embeddings endpoint. The key is only the
+    `EMBED_API_KEY` secret. Vectors are unit length, cached as base64 float16 under
+    `state/embeddings/` for 7 days, and a fresh run goes through the same float16 round trip, so
+    fresh and cached runs score identically. Cache key = sha256(`e1`, provider, model,
+    sha256(text)). Cost is bounded: at most `max_items` (1 to 200) candidates, 40 interest
+    phrases, 1 500 characters per text, batches of 16, 8 MB per answer. Any failure falls back to
+    keyword matching with a fixed, secret-free warning. Score:
+    `base + 0.50*match + weight*semantic + 0.20*feedback - 0.50*penalty`, where semantic is
+    `max(0, (best cosine - min_similarity) / (1 - min_similarity))`.
+
+97. **Weekly trends (P6.5, D8).** Deterministic, weekly digests only, off by default. The last 7
+    days come from every tag shard plus `latest.json`. Near-duplicates are one story (same
+    canonical URL, or at least 3 shared title words with Jaccard 0.6 or more; with embeddings
+    on, cosine 0.92 or more). Clusters: entity first, tag second, at least 3 stories each, score
+    = stories + 0.5 x stories in the last 72 hours. `trends.llm_labels` (off) sends the headlines
+    through the normal summarizer path (same injection rules, validation, cache) and names the
+    model next to the label. A flagged or failed label is left out. Tier 3 runs never add
+    trends.
+
+98. **Feedback weights (P6.6, D7).** Off by default. Thumbs links (HTML email only) open an Issue
+    whose body is `item:<16 hex> vote:up|down`. The weekly `feedback` step reads open Issues
+    with `GITHUB_TOKEN` from the fixed host `api.github.com` and accepts an Issue only if GitHub
+    says the author is `OWNER` or `COLLABORATOR`, a person (`type == "User"`), not a pull
+    request, and the whole body is 1 to 10 strict vote lines (at most 2 000 characters). Weights
+    are per topic, within -1..1, at most 0.3 per run per topic, halve every 30 days, and keep
+    the last 500 processed Issue numbers so a failed close never double counts. A vote moves a
+    score by at most 0.20. **Change from Phase 5:** thumbs links are now shown only when
+    `feedback.enabled` is true (before, they appeared whenever the repository URL was known).
+
+99. **`digest.yml` (Phase 6).** Adds `issues: write` and an "Apply feedback votes" step: the
+    token is in that step's `env` only, the step is `continue-on-error`, and it runs only when
+    `inputs.task_id == ''`. `EMBED_API_KEY` is passed to the digest step like the other secrets.
+    Action pins are unchanged.
+
+100. **Maintainer decisions for Stage 23 (2026-11-25), and a reminder.** Embeddings are optional
+     with a free Hugging Face route and a paid OpenAI-compatible route; the summarizer already
+     had the same choice. Found and fixed while building: `delivery.common.number()` raised
+     `OverflowError` for a huge JSON integer (now returns `None`); `post_with_retry` gained an
+     optional `headers` argument.
+     **Reminder, end of Phase 6 (do not forget):** keep the main repository private and publish
+     only the digest feed from a separate small public repository. That is a deliberate
+     deviation from the "private repo" lock, to be recorded as its own item. Exposures to review
+     first: `profile.yaml` (interests, schedule, language), the `state` branch and digests,
+     Actions logs, tokenized `extra_rss` URLs, `base_url` values, and open Issues and pull
+     requests.
+
+101. **Onboarding issue form and `onboard.yml` (P6.7, decision D4).** Files: `.github/ISSUE_TEMPLATE/onboarding.yml`
+    (21 fields), `digest/onboarding.py`, `python -m digest.cli onboard`, `.github/workflows/onboard.yml`.
+    - **Contract.** The parser reads the Issue body as `### <label>` sections. The labels, options and
+      required flags are the contract: `tests/test_onboard_cli.py` compares the form file with the parser's
+      tables, so one cannot change without the other. An unknown `###` heading ends the current section; a
+      known heading that appears twice is refused; a body over 20 000 characters is refused before parsing.
+      Text answers must be one line (4 000 characters), list answers at most 50 entries of 2 048 characters,
+      no control characters; choices and checkboxes must be a listed option; the max-items answer is 1 to 3
+      ASCII digits. The result goes through `Profile.model_validate`; a model error is reported as
+      "<form label>: is missing or not valid" and never with the model's own text, so an answer cannot travel
+      into the reply. The existing `agent_access` section is kept on a re-run (the form has no field for it).
+    - **Workflow.** Triggers `issues: opened, edited`. Runs only if the repository is not the template, the
+      Issue is open, labelled `onboarding`, authored by a `User` equal to `github.repository_owner`, and the
+      sender (the editor) is also the owner. This works for personal-account repositories; an organisation
+      owner is not a user, so the form would never run there (documented limit). Permissions are
+      `contents: write` and `issues: write`. The Issue body reaches the step through `env:` only. The step
+      commits `profile.yaml` alone (`git add profile.yaml`) to the default branch with a masked header token
+      (checkout does not persist credentials), comments the cron line and the secret names, and closes the
+      Issue only when the form was valid. The cron line is for the owner to paste into `digest.yml`
+      (the token has no `workflows` permission, item 91).
+    - **Unverified (first push):** that GitHub renders a form body as `### label`, the answer, and
+      `_No response_` for an empty optional field, and checkboxes as `- [x] label` / `- [ ] label`
+      (GitHub's documentation says only that answers are "converted to markdown"; the shape comes from
+      observed bodies and community code, third-party); that the `onboarding` label is applied without
+      being created first; that a push to the default branch is allowed by your branch ruleset.
+    - **Mutations** (`scripts/mutation_sanity.py`, prefix `onb-` and `onw-`): size cap, acknowledgement,
+      checkbox and choice allow-lists, repeated heading, unknown heading, control characters, no-echo,
+      kept `agent_access`, ASCII digits, owner author, owner sender, template guard, env-only input,
+      commit scope, persist-credentials, issue-number check, permissions.
+
+102. **Natural-language Tier 3 (P6.8) is deferred (maintainer decision 2026-11-25).** Intent parsing for
+    free-text A2A messages (items 53 and 13.3) is not built. It would put a model between an
+    unauthenticated message and a run that can send to the owner's channel, so it needs these rules
+    before it is built: (1) the model's output schema can only narrow a request (fewer items, shorter
+    window), never widen it or select a channel, key or target; (2) the model sees only the first 500
+    characters of the query, with no secrets and no feed content; (3) a failed or invalid parse falls
+    back to the plain digest, never to a guess; (4) it runs only on the owner's key with its own rate
+    limit; (5) a large hostile-query corpus and mutation checks ship with it. Until then A2A and MCP
+    callers use the structured `data`, `summary` and `digest` modes only.
+
+103. **Gateway default DeepSeek model.** `DEFAULT_DEEPSEEK_MODEL` in `src/env.ts` is now `deepseek-flash`
+    (item 94 changed the template first), and the retirement warning for `deepseek-chat` and
+    `deepseek-reasoner` points to it. `deepseek-v4-flash` stays valid when a caller names it. The
+    summarizer prompt is untouched (`p-56a22986b1`). Tests changed: `test/summarize.test.ts` (default
+    credentials) and `test/providers.test.ts` (new default and warning text). Not run against DeepSeek.
+
+104. **Hostile-text corpus.** `corpus/hostile-text/` (hub; `scripts/make_text_corpus.py`): 34 onboarding
+    answers, 30 Issue payloads for the vote reader, 20 chat texts. The template replays all three
+    (`tests/test_text_corpus.py`) against the real parser and CLI, `eligible` and `parse_votes`, and the
+    Slack and Telegram renderers and chunkers; onboarding cases carry a unique marker that must not
+    appear in stdout, stderr, the reply file or the problem list. The hub test fails if the committed
+    files differ from the generator. The corpus reuses rules that already have mutations (items 90, 98,
+    101), so it adds no mutation of its own.
+
+105. **Documentation and release notes (P6.9).** `docs/setup-telegram.md`, `setup-slack.md`,
+    `features.md` (Atom, embeddings, trends, feedback), `onboarding.md`, `first-push-phase6.md`,
+    `phase6-release.md` (commit messages and bundle repack). Nothing in them has been run against a real
+    service. `docs/state-phase5-update.md` and `docs/phase6-appendix-c-draft.md` are folded into this
+    appendix and STATE and are removed.
+
+### Open items after Phase 6
+
+- **First-push checks:** `docs/first-push-phase6.md` (Telegram, Slack, Hugging Face and OpenAI-compatible
+  embeddings, `deepseek-flash` with `thinking: disabled`, GitHub Issue fields and issue-form body shape,
+  `rss/feed.xml` raw URL, thumbs links, Trends section, no secrets in logs or state) plus the Tier 3 list
+  from Phase 4 and `docs/first-push-phase5.md`.
+- **Deferred by decision:** natural-language Tier 3 (102); A2A v1.0 migration (71, 91 D1); MCP OAuth
+  with protected resource metadata (72, 91 D2).
+- **End of Phase 6 (maintainer reminder, item 100):** a guided live setup of secrets, a Telegram bot and a
+  Slack webhook, and publishing only the digest feed from a separate small public repository while the main
+  repository stays private. The second part is a deliberate deviation from the "private repo" lock and
+  becomes its own Appendix C item when done, with the exposures list from item 100.
 - **Appendix B:** still open or partly open: 5, 6 (permission details), 10, 12.
-- **Hardening (Phase 5):** injection corpus growth, SSRF suite, eval set, keepalive, stale-source Issues, hub-level prompt hash check (45), port the secret-echo guard to the template (58), review `npm audit` dev findings, pin Actions to SHAs, branch rulesets, secret scanning and push protection.
-- **Polish (Phase 6):** Telegram, Slack, RSS, embeddings, trends, feedback weights, onboarding form and `onboard.yml`, intent parsing for natural-language A2A messages (53, 13.3).
-- **Guideline to add (item 74):** mocked `fetch` cannot find runtime option rejections; exercise each outbound call shape once under workerd.
+- **Not run:** `npm audit` review, repo hardening (`docs/repo-hardening.md`), the 30 to 50 human-checked
+  eval cases.
 
 ---
 

@@ -1,21 +1,18 @@
-# axon-feed
+# Axon (hub)
 
-Plane 1 of [Axon](https://github.com/gowthamsai09/Axon): collects sources (no LLM, no keys), dedupes, tags and scores
-items, and publishes static JSON shards. Spec: sections 4.1 and 5.
+The shared repository of [Axon](https://github.com/gowthamsai09/Axon): the specification, JSON schemas,
+canonical prompts, shared test corpora and operational docs. It has no runtime code of its own.
 
-**Status:** Phases 1 and 5 built and tested locally; the first real Actions run has not happened (`docs/go-live.md`).
-Collectors (arXiv, Hugging Face, Hacker News, GitHub releases, lab blogs), redirect resolution, rolling store,
-publishing to the `data` branch, and, since Phase 5, stale-source Issues and an SSRF-hardened fetcher.
+- `docs/axon-architecture.md`: the specification and single source of truth (v1.7).
+- `docs/axon-STATE.md`, `docs/axon-GUIDELINES.md`: handoff state and engineering rules.
+- `docs/`: setup and first-push guides (`setup-telegram.md`, `setup-slack.md`, `features.md`,
+  `onboarding.md`, `first-push-phase5.md`, `first-push-phase6.md`, `go-live.md`, `repo-hardening.md`).
+- `schemas/`: JSON schemas exported from the code (`python scripts/check_schemas.py`).
+- `prompts/`: canonical summarizer and onboarding prompts (`python scripts/prompt_id.py`).
+- `corpus/`: shared hostile-input corpora: `injection/`, `ssrf/`, `hostile-text/` (see `corpus/README.md`).
+- `scripts/`: generators for the corpora, the prompt id and the Action pin checker.
 
-```bash
-python -m scripts.validate_config      # offline: taxonomy, sources, authority
-python -m scripts.validate_sources     # network: probe every verify:true source (run locally)
-python -m pipeline.run --out ../feed-out --window-hours 72
-python -m scripts.inspect_feed ../feed-out
+```powershell
+pip install -r requirements-dev.txt
+ruff format .; ruff check .; mypy .; pytest
 ```
-Config lives in `config/` (`taxonomy.yaml`, `sources.yaml`, `authority.yaml`). Sources whose feed is unknown are listed
-under `needs_research`; never add guessed feed URLs.
-
-**Stale sources:** a source that returns nothing for 3 days in a row (`stale_after_days` per source; `skip_weekends` for
-arXiv) opens one Issue labelled `source-stale`; it closes when the source recovers. The step is `scripts/sync_issues.py`
-(needs `issues: write`, never fails the run). Mocked tests only until the first push.

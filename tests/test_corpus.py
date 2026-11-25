@@ -52,7 +52,16 @@ def test_ssrf_corpus_is_well_formed() -> None:
     assert len(cases) >= 80 and len(set(ids)) == len(ids)
     assert {c["expect"] for c in cases} == {"allowed", "blocked"}
     categories = {c["category"] for c in cases}
-    assert {"scheme", "ipv4", "ipv6", "numeric-host", "userinfo", "port", "dns", "allowed"} <= categories
+    assert {
+        "scheme",
+        "ipv4",
+        "ipv6",
+        "numeric-host",
+        "userinfo",
+        "port",
+        "dns",
+        "allowed",
+    } <= categories
     for c in cases:
         assert set(c) == {"id", "url", "expect", "category", "dns"}
         assert all(isinstance(v, list) and v for v in c["dns"].values())

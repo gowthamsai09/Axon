@@ -2,10 +2,11 @@
 
   python scripts/make_ssrf_corpus.py [--out corpus/ssrf]
 
-Each case: id, url, expect ("blocked" | "allowed"), category and `dns` (host -> addresses) that a test
-resolver or a patched getaddrinfo answers with. Numeric-looking hosts map to a PUBLIC address on purpose:
-they must be refused whatever DNS says. Consumed by axon-template (digest/safe_http.py) and axon-feed
-(collectors/http.py). The gateway never fetches a caller-supplied URL and tests its config rules itself."""
+Each case: id, url, expect ("blocked" | "allowed"), category and `dns` (host -> addresses) that a
+test resolver or a patched getaddrinfo answers with. Numeric-looking hosts map to a PUBLIC address
+on purpose: they must be refused whatever DNS says. Consumed by axon-template
+(digest/safe_http.py) and axon-feed (collectors/http.py). The gateway never fetches a
+caller-supplied URL and tests its config rules itself."""
 
 from __future__ import annotations
 
@@ -18,7 +19,9 @@ PUBLIC = "93.184.216.34"
 CASES: list[dict[str, Any]] = []
 
 
-def add(cid: str, url: str, expect: str, category: str, dns: dict[str, list[str]] | None = None) -> None:
+def add(
+    cid: str, url: str, expect: str, category: str, dns: dict[str, list[str]] | None = None
+) -> None:
     CASES.append({"id": cid, "url": url, "expect": expect, "category": category, "dns": dns or {}})
 
 
@@ -40,7 +43,11 @@ allowed("allow-query-fragment", "https://sub.example.com/a?b=c#d", {"sub.example
 allowed("allow-public-ipv4", "http://8.8.8.8/")
 allowed("allow-public-ipv6", "https://[2606:4700:4700::1111]/")
 allowed("allow-idn", "https://münchen.de/", {"münchen.de": [PUBLIC]})
-allowed("allow-two-public-answers", "https://multi.example/", {"multi.example": [PUBLIC, "2606:4700:4700::1111"]})
+allowed(
+    "allow-two-public-answers",
+    "https://multi.example/",
+    {"multi.example": [PUBLIC, "2606:4700:4700::1111"]},
+)
 
 for cid, url in [
     ("ftp", "ftp://example.com/"), ("file", "file:///etc/passwd"), ("gopher", "gopher://example.com/"),
@@ -91,7 +98,12 @@ for cid, url in [
     ("empty-userinfo", "http://:@example.com/"), ("encoded-at", "http://example.com%40127.0.0.1/"),
     ("backslash-at", "http://example.com\\@127.0.0.1/"),
 ]:  # fmt: skip
-    blocked("userinfo", f"userinfo-{cid}", url, {"example.com": [PUBLIC], "example.com%40127.0.0.1": [PUBLIC]})
+    blocked(
+        "userinfo",
+        f"userinfo-{cid}",
+        url,
+        {"example.com": [PUBLIC], "example.com%40127.0.0.1": [PUBLIC]},
+    )
 
 for cid, url in [
     ("too-high", "http://example.com:99999/"), ("letters", "http://example.com:abc/"),
@@ -100,17 +112,27 @@ for cid, url in [
     blocked("port", f"port-{cid}", url, {"example.com": [PUBLIC]})
 
 dns_private: dict[str, list[str]] = {
-    "localhost": ["127.0.0.1"], "foo.localhost": ["127.0.0.1"], "metadata.google.internal": ["169.254.169.254"],
-    "internal.example": ["10.1.2.3"], "rebind.example": [PUBLIC, "10.0.0.5"], "v6.example": ["::1"],
-    "mapped.example": ["::ffff:10.0.0.1"], "ula.example": ["fd00::5"],
-}  # fmt: skip
+    "localhost": ["127.0.0.1"],
+    "foo.localhost": ["127.0.0.1"],
+    "metadata.google.internal": ["169.254.169.254"],
+    "internal.example": ["10.1.2.3"],
+    "rebind.example": [PUBLIC, "10.0.0.5"],
+    "v6.example": ["::1"],
+    "mapped.example": ["::ffff:10.0.0.1"],
+    "ula.example": ["fd00::5"],
+}
 for cid, url in [
-    ("localhost", "http://localhost/"), ("localhost-dot", "http://localhost./"), ("localhost-upper", "http://LOCALHOST/"),
-    ("localhost-subdomain", "http://foo.localhost/"), ("metadata-name", "http://metadata.google.internal/"),
-    ("private-answer", "http://internal.example/"), ("mixed-answers", "http://rebind.example/"),
-    ("ipv6-loopback-answer", "http://v6.example/"), ("mapped-answer", "http://mapped.example/"),
+    ("localhost", "http://localhost/"),
+    ("localhost-dot", "http://localhost./"),
+    ("localhost-upper", "http://LOCALHOST/"),
+    ("localhost-subdomain", "http://foo.localhost/"),
+    ("metadata-name", "http://metadata.google.internal/"),
+    ("private-answer", "http://internal.example/"),
+    ("mixed-answers", "http://rebind.example/"),
+    ("ipv6-loopback-answer", "http://v6.example/"),
+    ("mapped-answer", "http://mapped.example/"),
     ("ula-answer", "http://ula.example/"),
-]:  # fmt: skip
+]:
     blocked("dns", f"dns-{cid}", url, dns_private)
 
 
