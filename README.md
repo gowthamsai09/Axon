@@ -16,3 +16,7 @@ canonical prompts, shared test corpora and operational docs. It has no runtime c
 pip install -r requirements-dev.txt
 ruff format .; ruff check .; mypy .; pytest
 ```
+
+## License
+
+Apache-2.0. See `LICENSE` and `NOTICE`.

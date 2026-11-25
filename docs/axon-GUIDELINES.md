@@ -100,7 +100,7 @@ Audience: the assistant and the maintainer, in every chat. Read this together wi
 ## 12. Handoff package for a new chat
 Project knowledge holds the text documents (spec with Appendix C folded in, STATE, this file, the current phase brief, the exported schemas) **and the code as text bundles**, one set per repo, made with `axon_bundle.py` (no zip files: they were unreliable to upload). Files in project knowledge sit on disk under `/mnt/project/`, so the assistant reads them with tools and they do not fill the chat context unless printed.
 ```powershell
-cd C:\Users\DGY3KOR\Desktop\Axon
+cd <path-to>\Axon
 python axon_bundle.py pack .\axon-gateway --out .\bundles\axon-gateway.bundle.md
 python axon_bundle.py pack .\axon-template --out .\bundles\axon-template.bundle.md
 python axon_bundle.py pack .\axon-feed --out .\bundles\axon-feed.bundle.md --exclude tests/fixtures
