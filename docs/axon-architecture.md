@@ -1884,6 +1884,41 @@ Every deviation, decision or discovered fact that changes behaviour is a numbere
     service. `docs/state-phase5-update.md` and `docs/phase6-appendix-c-draft.md` are folded into this
     appendix and STATE and are removed.
 
+106. Licence: Apache-2.0 for all four repositories
+
+Decision (maintainer, 2026-11-26): Apache-2.0, "Copyright 2026 gowthamsai09", in axon, axon-feed, axon-template, axon-gateway. Each has LICENSE (canonical text, unmodified), NOTICE, a README section, a CONTRIBUTING clause (contributions are under Apache-2.0), license = "Apache-2.0" in pyproject.toml and package.json. Dependency licences were checked with no-install scripts; the tld package is MPL (kept as a dependency, not copied). Revert: a later licence change applies only to new versions; copies already published stay under Apache-2.0.
+
+107. Repository visibility and GitHub Free facts (corrects earlier wording)
+
+Verified by search on 2026-11-26: on GitHub Free, secret scanning with push protection, rulesets, Pages and private vulnerability reporting (PVR) are available for public repositories only. Earlier advice to use PVR on private repos was wrong. Decision (maintainer): the four code repos are public; each user's digest repo (axon-digest) is private and created from the template. Affected text: docs/repo-hardening.md and first-push checklist item 5(k) (say "public repos"); SECURITY.md uses the PVR button and a public-issue fallback that carries no details. Pages serves axon-feed only (public). Task B (separate public feed repo) is unaffected.
+
+108. Hub CI fixes
+
+First live CI run failed: plugins = ["pydantic.mypy"] in pyproject.toml (the hub has no pydantic). Removed. requirements-dev.txt now pins mypy, pytest, PyYAML, ruff and types-PyYAML. Result: hub CI and Dependabot verified live. Dependabot PRs stay unmerged until the scripts/pin_actions.py table is updated with the bump (a merged bump would fail --check).
+
+109. Fake secrets in tests are built by concatenation
+
+GitHub secret scanning flagged the fake Telegram token in tests/test_telegram.py. Fixtures now write it as "123456789:AA" + "<rest>" (6 lines, including the full-width digit variant). The alert was closed as "Used in tests"; no rotation (the value was never real). Rule for axon-GUIDELINES.md: no complete token-shaped literal in any test or doc.
+
+110. Template tests read a frozen baseline profile
+
+Live finding: in a user repo, changing channel in profile.yaml made 10 tests fail, because the tests read the editable profile. Fix: tests/fixtures/profile_base.yaml is the baseline; conftest.BASE_PROFILE points at it. Two tests in test_profile.py check the baseline's defaults and that it equals the shipped profile.yaml (skipped outside the template repo). The cron-match test still reads the real profile on purpose. Verified live (green CI in axon-digest after edits). Limitation: a repo created from a template is a snapshot, so later template fixes do not reach existing user repos; the owner copies changed files by hand. Say so in docs/onboarding.md.
+
+111. Issue-form body shape verified; None for an unset optional dropdown
+
+Verified live (Issue #3 on axon-digest): headings ### <label>, _No response_ for an empty answer, - [x] and - [ ] for checkboxes. New finding: an optional dropdown set to no choice arrives as the text None, not _No response_. The parser rejected it ("not a listed option"). Fix in digest/onboarding.py (NONE_CHOICE; ignored only when the field is optional), three tests, mutation onb-none-choice (template mutations: 95). After the fix the bot reply, the profile.yaml commit and closing the Issue verified live. Also seen: saving an Issue edit without changing the text fires no edited event.
+
+112. Live results (first real runs)
+
+Verified live: axon-feed collect run, meta.json served at https://gowthamsai09.github.io/axon-feed/meta.json (the site root returns 404, expected); digest delivery by Telegram (2 messages of 5 items), Slack (10 items) and email (Gmail SMTP, port 465), each via Actions; state branch written and read back by the next run; last_run.json fields as designed (candidates 652, items 10, 17 LLM calls). The first digest run printed a soft error on the state checkout (branch not created yet; continue-on-error); it was gone on the second run. Cost for two runs: under 0.01 USD. Secrets check: the Actions log shows secrets as ***; log search for key fragments, the Telegram token, the chat id and hooks.slack.com returned nothing; last_run.json clean. Open: the field names of delivered.json were not reported yet.
+Observed quirk: deepseek-flash often exceeds the length limits (one-liner 200, key point 160), so the validator retries or repairs (17 calls for 10 items). The prompt is locked (p-56a22986b1); no change. Watch cost and latency before raising max_items.
+Not run: breaking SMTP_PASS (the old value cannot be read back, so a mistake would force a new app password). The failure-notice path stays mocked only; test it later with a throwaway secret name in a scratch repo.
+Mocked only so far: Atom (rss) channel, embeddings, trends, feedback links, keepalive, stale-source Issues, evals live, gateway, Tier 3.
+
+113. Environment facts from the walkthrough
+
+The company laptop cannot resolve api.telegram.org, hooks.slack.com or the SMTP host, and the company pip index answers 401. So all live channel tests ran in Actions, not locally. The Slack CLI failed with 403 (apps.hosted.generateAuthTicket); the incoming webhook was created in a browser on a personal device at api.slack.com/apps. GitHub and github.io are reachable. Commits use the GitHub noreply address with "Block command line pushes that expose my email" on.
+
 ### Open items after Phase 6
 
 - **First-push checks:** `docs/first-push-phase6.md` (Telegram, Slack, Hugging Face and OpenAI-compatible

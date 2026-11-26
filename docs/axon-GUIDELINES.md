@@ -104,7 +104,7 @@ cd <path-to>\Axon
 python axon_bundle.py pack .\axon-gateway --out .\bundles\axon-gateway.bundle.md
 python axon_bundle.py pack .\axon-template --out .\bundles\axon-template.bundle.md
 python axon_bundle.py pack .\axon-feed --out .\bundles\axon-feed.bundle.md --exclude tests/fixtures
-python axon_bundle.py pack .\Axon --out .\bundles\axon-hub.bundle.md
+python axon_bundle.py pack .\Axon --out .\bundles\axon.bundle.md
 ```
 Each command writes `*.part1.md`, `part2.md`, ... (each at most about 350 KB); upload every part plus `axon_bundle.py` itself. The bundle includes tests and the small fixtures they need, honours `.gitignore`, skips locks, binaries, `.env*`, `.dev.vars`, keys and anything secret-like (reported, never written; use `--allow <path>` only for a file you reviewed). The assistant rebuilds a repo with `python axon_bundle.py unpack <parts> --out <dir>`, which verifies every file's sha256, the file count and that all parts are present. STATE records the **observed baseline test counts** per repo; the assistant compares its sandbox baseline with them, so a missing file shows up as a different count. Re-pack after every phase and delete superseded bundles. Large captured fixtures (axon-feed) may be excluded: say so in STATE and run that suite locally.
 
