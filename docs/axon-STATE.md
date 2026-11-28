@@ -1,10 +1,12 @@
 # Axon: project state (handoff file)
 
-Updated: 2026-11-26. Phase 6 is built and its live walkthrough (Task A of `axon-END-OF-PHASE6-BRIEF.md`)
-is mostly done: Telegram, Slack, email, the onboarding form and the `state` branch are **verified live**.
-Spec: `axon-architecture.md` **v1.7** plus the draft Appendix C items **106 to 113** (file
-`phase6-live-appendix-c.md`, to be merged when the spec becomes v1.8). Appendix C items 1 to 105 are in
-the spec. Rules for working: `axon-GUIDELINES.md`. Owner: gowthamsai09.
+Updated: 2026-11-28. Phase 6 is built and its live walkthrough (Task A of `axon-END-OF-PHASE6-BRIEF.md`)
+is largely done: Telegram, Slack, email, the onboarding form, feedback links, the Atom channel, keepalive and
+the `state` branch are **verified live**; **the gateway is deployed to Cloudflare Workers** with Tier 1, 2 and
+**Tier 3** verified live (sections 3b and 3c).
+Spec: `axon-architecture.md` **v1.7** plus Appendix C items **106 to 127** (draft items, to be folded in
+when the spec becomes v1.8; the 2026-11-27 and 11-28 items are in `phase6-live-appendix-c-part2.md` and
+`phase6-live-appendix-c-part3.md`). Items 1 to 105 are in the spec. Rules for working: `axon-GUIDELINES.md`. Owner: gowthamsai09.
 
 Words used in this file: **verified live** = seen on real services by the maintainer; **mocked only** =
 tests with fakes; **not run** = nothing executed; **derived** = computed, not observed.
@@ -14,17 +16,18 @@ tests with fakes; **not run** = nothing executed; **derived** = computed, not ob
 | Item | State |
 |---|---|
 | Phases 0 to 6 (code) | DONE. Phase 6 built 2026-11-26 in stages 1, 23, 45 |
-| Four code repos on GitHub | `axon` (the "Axon" repo), `axon-feed`, `axon-template`: pushed, public, CI green. `axon-gateway`: repo exists, **not pushed** |
+| Code repos on GitHub | All four pushed, public, CI green: hub (`Axon`), `axon-feed`, `axon-template`, `axon-gateway`. Private: `axon-digest` (user repo made from the template) |
 | Licence | Apache-2.0, "Copyright 2026 gowthamsai09", all four repos (item 106) |
-| Feed (plane 1) | **Verified live**: `collect.yml` runs, `meta.json` served by Pages |
-| User pipeline (plane 2) | **Verified live** in the private repo `axon-digest` (created from the template): Telegram, Slack, email, onboarding form |
-| Gateway (plane 3) | Built and mock-tested only; not deployed |
-| Next work | Close the remaining Task A checks; Task B (public feed repo design); Task C remainder (push gateway, hardening) |
+| Feed (plane 1) | **Verified live**: `collect.yml` runs, feed served by Pages |
+| User pipeline (plane 2) | **Verified live** in `axon-digest`: Telegram, Slack, email, onboarding form |
+| Gateway (plane 3) | **Deployed 2026-11-27**: `https://axon-gateway.gowthamsaiyadlapalli1234.workers.dev`. Tier 1 and 2 **verified live**; **Tier 3 verified live over A2A on 2026-11-28** (GitHub App `5953758`, key stored as a Cloudflare Secret, register, token, start, poll, cancel, revoke). Tier 3 over MCP not yet run |
+| Public feed repo (Task B) | **Deferred by decision 2026-11-27** (item 114); revisit if an RSS reader feed is wanted |
+| Next work | A demo of the whole project; then the housekeeping in section 7 (Tier 3 over MCP, measurements, docs fixes, token narrowing, Dependabot) |
 
 Folder layout on the laptop (siblings): `Axon/` (hub), `axon-feed/`, `axon-template/`, `axon-gateway/`,
-`feed-out/` (generated, currently `<path-to>\Axon\Axon\feed-out`). Live repos: `gowthamsai09/axon`
-is the hub repo named "Axon" (check the exact name before scripting), `gowthamsai09/axon-feed`,
-`gowthamsai09/axon-template`, `gowthamsai09/axon-gateway`, private `gowthamsai09/axon-digest`.
+`feed-out/` (generated, currently `<path-to>\Axon\Axon\feed-out`). Live repos: `gowthamsai09/Axon` (the hub;
+GitHub ignores case), `gowthamsai09/axon-feed`, `gowthamsai09/axon-template`, `gowthamsai09/axon-gateway`,
+private `gowthamsai09/axon-digest`.
 User environment: company Windows laptop, PowerShell, conda env `axon` (Python 3.12), Node 22, behind a
 corporate proxy with DNS restrictions (section 8). Commits use the GitHub noreply address.
 
@@ -35,8 +38,8 @@ corporate proxy with DNS restrictions (section 8). Commits use the GitHub norepl
 | 0 Foundations | DONE |
 | 1 Shared feed | DONE. Live data 2026-10-20 (665 items). **First Actions run verified live 2026-11-26** (item 112) |
 | 2 User pipeline MVP | DONE 2026-10-23. Real email **verified live 2026-11-26** |
-| 3 Gateway Tier 1 and 2 | DONE 2026-10-28 (laptop-tested with mocks). Not deployed; no live LLM call |
-| 4 Tier 3 | DONE 2026-10-29, user-confirmed green 2026-10-31. Nothing against real GitHub, KV or a deployed Worker |
+| 3 Gateway Tier 1 and 2 | DONE 2026-10-28 (mocks); **deployed and verified live 2026-11-27** (section 3b), including one real Tier 2 call |
+| 4 Tier 3 | DONE 2026-10-29, user-confirmed green 2026-10-31. **Verified live over A2A 2026-11-28** (section 3c); MCP route and measurements still open |
 | 5 Hardening | DONE 2026-11-22. Mostly mocked only (section 5) |
 | 6 Polish | BUILT 2026-11-26; stage 45 user-confirmed green 2026-11-25. Live walkthrough: see section 3 |
 
@@ -44,8 +47,11 @@ corporate proxy with DNS restrictions (section 8). Commits use the GitHub norepl
 
 **Verified live**
 - Hub, feed and template CI green on GitHub; Dependabot opened PRs (item 108).
-- `axon-feed`: `collect.yml` ran; `https://gowthamsai09.github.io/axon-feed/meta.json` is served (the
-  site root returns 404, expected: there is no index page). Counts were checked with PowerShell.
+- `axon-feed`: `collect.yml` ran; Pages serves the feed under `/feed/`, so `FEED_BASE` is
+  `https://gowthamsai09.github.io/axon-feed/feed` and `meta.json` is at `.../axon-feed/feed/meta.json`
+  (`.../axon-feed/meta.json` and the site root return 404, as expected). `meta.json` at 2026-11-26 16:45
+  UTC: 1270 items, 150 in `latest`, 16 tags, 20 entities, all 9 sources `ok`, none stale; only expected
+  extract warnings (403 and 429 from other sites, the 30-page-fetch cap).
 - `axon-digest` (private, from the template): secrets `LLM_API_KEY`, `TELEGRAM_BOT_TOKEN`,
   `TELEGRAM_CHAT_ID`, `SLACK_WEBHOOK_URL`, `SMTP_*`, `MAIL_TO`; variable `FEED_BASE` set by the
   maintainer, never seen by the assistant.
@@ -71,26 +77,103 @@ corporate proxy with DNS restrictions (section 8). Commits use the GitHub norepl
 - Breaking `SMTP_PASS` to see the failure notice (the old value cannot be read back, so a mistake would
   force a new app password). The failure-notice path stays mocked only.
 
+**Verified live later:** feedback links, the Atom channel, keepalive and Tier 3 (section 3c).
+
 **Mocked only so far**
-- Atom (`rss`) channel, embeddings, trends, feedback Issues and links, `keepalive.yml`, stale-source
-  Issues, `evals live`, deploy workflow, gateway, Tier 3, the second email-failure path.
+- Embeddings, trends, stale-source
+  Issues, `evals live`, the second email-failure path.
 
 **Findings fixed during the walkthrough** (all have tests): pydantic mypy plugin in the hub (108); token-
 shaped fixture flagged by secret scanning (109); tests read the editable profile (110); `None` dropdown
 value (111). **Limitation:** a repo made from the template is a snapshot, so later template fixes do not
 reach existing user repos; the owner copies changed files by hand (item 110).
 
+### 3b. Gateway deploy and live record (2026-11-27)
+
+**Deploy path.** Pushed to `axon-gateway` (CI green: lint, typecheck, 888 tests, `prompt:check`, hub contract
+tests, `wrangler deploy --dry-run`). The `deploy` workflow failed on its first runs by design (the guard
+refuses placeholder config). The maintainer then created, by hand and never in chat: a Cloudflare account
+(Free plan; the account `workers.dev` subdomain is `gowthamsaiyadlapalli1234`, auto-assigned and accepted as
+public), the KV namespace `axon-gateway-tokens` (id in `wrangler.toml`, public), an account API token from the
+"Edit Cloudflare Workers" template (no expiry, maintainer's choice; rotation is manual) and the GitHub
+environment `production` (required reviewer: the maintainer; secrets `CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_ACCOUNT_ID`). `PUBLIC_URL` and the KV id were set in `wrangler.toml`; one existing test had to be
+changed deliberately (item 116). Deploy #4 waited for approval, then succeeded.
+
+**Verified live**
+- Deploy: upload 1166.27 KiB (215.79 KiB gzip), Worker startup 23 ms, version `dd9b9a55-7dba-47dc-906e-35f0f99596dd`,
+  bindings accepted by Cloudflare including the three `[[ratelimits]]` (60, 10 and 30 per 60 s).
+- `/healthz` `ok`; Agent Card: `url` equals `PUBLIC_URL/a2a`, protocol 0.3.0, skills `get_ai_updates` and
+  `summarize_ai_updates`, scheme `callerLlmKey`, no Tier 3.
+- A2A Tier 1 (`topics: ["rag"]`, limit 3): `completed`, 3 items, `feed_stale` false, `fallback` null,
+  `missing_shards` empty.
+- MCP: `server/discover` lists 2026-07-28 and 2025-11-25; legacy `tools/list` returns `get_ai_updates` and
+  `summarize_items`; `tools/call get_ai_updates` returns 3 items, not stale, no fallback.
+- Hygiene: `GET /a2a` 405, `text/plain` 415, `GET /` 404; Tier 2 without a key `input-required`.
+- Rate limit: 70 POSTs in a row gave 61 `200` and 9 `429` (the limit is per location and approximate).
+- **Tier 2 with a real key**: two feed items summarized by `deepseek` / `deepseek-flash`, state `completed`,
+  both items `ok`; the key did not come back in the response. The test key was deleted afterwards.
+- Cloudflare Metrics (last 24 h, after about 83 requests): 83 invocations, 133 subrequests, 0 errors,
+  CPU time 2 ms (panel) and median CPU 4.62 ms (active deployment), wall time 7 ms, request duration 7 ms.
+  Free plan CPU limit is 10 ms; only medians were read, not p99.
+
+**Not verified / open**
+- No real MCP or A2A client yet (everything came from PowerShell).
+- `Retry-After` on a real 429 (the check printed nothing because the window had reset).
+- `wrangler tail` not run (Cloudflare edge log checked, section 3c).
+- CPU p99 and Tier 2 CPU and subrequests per request (Tier 3: section 3c).
+- The company proxy may inspect HTTPS: the Tier 2 test key crossed it. It was a dedicated key and is deleted.
+
+### 3c. Digest extras and Tier 3 live record (2026-11-27 and 2026-11-28)
+
+**Verified live (observed)**
+- **Feedback links:** the thumbs links in the email opened prefilled Issues; the "Apply feedback votes" step
+  read, counted and closed 2 Issues: `feedback: applied 2 vote(s) from 2 issue(s); 0 ignored, 0 for unknown
+  items, 2 closed`. `weights.json` on `state` then held `ai-hardware +0.1`, `small-local-models +0.1`,
+  `research-papers -0.1`. The first empty run after enabling feedback stamps the 6-day wait (`MIN_INTERVAL_DAYS`),
+  so a vote the same day was skipped until `weights.json` was deleted on `state` (item 122). Not verified: a
+  stranger's vote being ignored; the effect of the weights on ranking.
+- **Atom (`rss`) channel:** two runs wrote `rss/feed.xml` and `rss/entries.json` on `state`; the second file
+  held 2 entries, newest first, 20 distinct item links, well-formed Atom (PowerShell and a second parser). Text is
+  plain, the `self` link is the raw URL (needs a sign-in for a private repo). Item 6 of one digest was the
+  designed extractive fallback.
+- **`keepalive.yml`:** one manual run, green; `digest.yml` still shown as enabled.
+- **Cloudflare Logs (HTTP requests):** stores edge metadata only (ray, time, method, path, host, IP, country,
+  status, cache); the expanded row had no request headers or body.
+- **Tier 3 setup:** GitHub App created on the personal account (webhook "Active" unticked, Actions read and
+  write, Contents read-only, Metadata read-only), installed on `axon-digest` only. The private key was first
+  saved as a Cloudflare variable of type Text (visible), removed by the next deploy, the key rotated, and stored
+  again as type **Secret** (item 123). With the real `GITHUB_APP_ID` in `wrangler.toml` the Agent Card lists
+  `run_personal_digest` and `ownerBearer`.
+- **register:** green with GitHub's real OIDC token. **issue-token:** the token showed as `***` in the job summary;
+  the workflow no longer masks it (item 123), then the token was readable once and the run was deleted.
+- **A2A flow:** the first run failed because the gateway rejected the `null` the template writes for the unused
+  `summary` / `fallback_snippet` (item 124). After the fix: `submitted`, `working` at 16 s, `completed` at 32 s,
+  3 items, `deepseek/deepseek-flash`, 1 warning (`summary rejected (schema violation in: notable_figures)`),
+  `untrusted: True`. A cancel sent at once returned -32002 (the run is not listed yet); after 12 s it returned
+  `canceled`. After the `revoke-token` workflow the same token gave `401` (delay not measured).
+
+**Not verified / open**
+- Tier 3 over MCP (`start_digest`, `get_digest_status`); a real MCP or A2A client; subrequests, CPU and KV usage
+  per Tier 3 request; the delay until a revoked token stops working.
+- `scripts/integration-real.js` fails behind the company proxy (`ENOTFOUND`: Node 22.14 `fetch` does not use the
+  proxy); the same steps were run from PowerShell (item 127).
+
 ## 4. Test status (observed by the user on Windows unless marked)
 
 | Repo | Tests | Notes |
 |---|---|---|
-| axon-template | Last observed 2026-11-25 after stage 45 (with `HUB_DIR` set): **1397 collected, 1352 passed, 45 skipped**. After the live fixes (baseline profile, `None` dropdown): **expected 1402 collected, 1357 passed, 45 skipped (derived; confirm on the laptop)** | Test files by stage: stage 1 `test_chat_common`, `test_telegram`, `test_slack`, `test_chat_delivery`; stage 23 `test_rss`, `test_embeddings`, `test_trends`, `test_weights`, `test_feedback`, `test_cli_phase6`, `test_pipeline_phase6`, `test_stage23_misc`; stage 45 `test_onboarding`, `test_onboard_cli`, `test_onboard_workflow`, `test_text_corpus` (139 tests when the hub copy is found through `HUB_DIR` or `..\Axon`, else 6 skips) |
+| axon-template | Last observed 2026-11-25 after stage 45 (with `HUB_DIR` set): **1397 collected, 1352 passed, 45 skipped**. After the live fixes, with the real hub path (observed 2026-11-27): **1400 collected, 1355 passed, 45 skipped** (44 need POSIX bash, 1 empty parameter set) | Test files by stage: stage 1 `test_chat_common`, `test_telegram`, `test_slack`, `test_chat_delivery`; stage 23 `test_rss`, `test_embeddings`, `test_trends`, `test_weights`, `test_feedback`, `test_cli_phase6`, `test_pipeline_phase6`, `test_stage23_misc`; stage 45 `test_onboarding`, `test_onboard_cli`, `test_onboard_workflow`, `test_text_corpus` (139 tests when the hub copy is found through `HUB_DIR` or `..\Axon`, else 6 skips) |
 | axon-feed | user reported green; exact count not reported (about 446, derived) | Record the real number at the next run |
 | Axon hub | 30 passed + 1 skipped (observed after stage 45); CI green on GitHub | corpus, prompt id, schema, hostile-text tests |
-| axon-gateway | **888 passed in 29 files** (observed after stage 45) | typecheck, lint, tests, `prompt:check` (`p-56a22986b1`) green |
+| axon-gateway | **992 passed** (observed 2026-11-28 after the null fix; 888 observed before it; my derived 892 was 100 low and the reason is not established, probably suites that read the hub) | typecheck, lint, tests, `prompt:check` (`p-56a22986b1`) green; `test/deploy-config.test.ts` now asserts that the repo's own `wrangler.toml` passes the guard |
 
 Checks everywhere: `ruff format .; ruff check .; mypy .; pytest` (Python); `npm run typecheck; npm run
 lint; npm test; npm run prompt:check` (gateway).
+
+Template change 2026-11-28 (`issue-token.yml` no longer masks the token, item 123): counts unchanged (derived); in my
+sandbox `tests/test_phase4.py` gave 74 passed and the new mutation `wf-issue-token-echo` was killed. The project
+bundle holds 94 mutations before that change (the 95th named below is not in it), 95 after.
 
 Mutation sanity: template `scripts/mutation_sanity.py` has **95 mutations** (27 before Phase 6, 49 in
 stages 1 and 23, 18 in stage 45, 1 new: `onb-none-choice`). 94 of 94 observed on the laptop on
@@ -135,7 +218,7 @@ notice step `if: failure()`; commit state `if: always()`), `onboard.yml` (issues
 Local run (PowerShell): `python -m digest.cli run --profile profile.yaml --feed <path-to>\Axon\Axon\feed-out
 --state-dir .local\state --outbox .local\outbox --dry-run` (add `--no-llm` for no key).
 
-### Plane 3: axon-gateway (Phase 3 and 4; not deployed)
+### Plane 3: axon-gateway (Phase 3 and 4; deployed 2026-11-27, Tier 3 off)
 Hono app, `createApp(deps)` (injected fetch, clock, sleep, rng, nonce). Layout: `src/index.ts` (routes,
 405/404, no CORS), `a2a.ts` and `mcp.ts` (thin adapters over the core), `agentcard.ts`,
 `core/{updates,summarize,feed,deps,digest}.ts` (the one contract), `providers.ts` (fixed provider URLs,
@@ -227,66 +310,48 @@ Deliberate edits to existing tests: template `tests/test_cli.py`, `tests/test_ph
 
 ## 7. What is left
 
-### A. Close the live walkthrough (Task A, step 6 and 7)
-1. Merge Appendix C items 106 to 113 into the spec (v1.8) and commit this STATE to the hub (replace the
-   hub copy; the project copy is the source).
-2. Confirm: the secret-scanning alert is closed as "Used in tests"; template CI green after the `None`
-   fix (expected counts in section 4); the 95 mutations run on the laptop.
-3. Live checks still open (follow `docs/first-push-phase5.md` and `docs/first-push-phase6.md`): Atom
-   (`rss`) channel, embeddings, trends, feedback Issues and links, `keepalive.yml`, stale-source Issues
-   after a few feed runs, `evals live --limit 3`, failure notice with a broken SMTP secret (use a scratch
-   repo, never the real secret).
-4. Docs fixes: wording of `<pin-to-commit-sha>` in docs and the checklist (pins are SHAs already);
-   `docs/repo-hardening.md` and checklist 5(k) say "public repos" (item 107); `docs/onboarding.md` says a
-   template fix does not reach existing repos (item 110); feed `docs/go-live.md` loose end (section 6).
+### A. Records
+1. Paste Appendix C items 122 to 127 (`phase6-live-appendix-c-part3.md`) into the spec and commit STATE and the
+   spec to the hub. Items 106 to 121 are in the spec already. Optionally call the result v1.8.
+2. Docs fixes: `docs/github-app-setup.md` (gateway): untick Webhook Active, use type Secret in the dashboard,
+   the token is shown unmasked, run the test from PowerShell behind the proxy, replace the "artifact" sentence;
+   the `<pin-to-commit-sha>` wording (pins are SHAs already); `docs/repo-hardening.md` says "public repos" (item
+   107); `docs/onboarding.md` on the template snapshot (item 110); the feed's `docs/go-live.md` loose end and its
+   `/feed/` URL. Copy the changed `issue-token.yml` into existing user repos by hand (item 110).
 
-### B. Task B: public feed repository
-Keep the main digest repo private and publish only the digest feed from a separate small public repo.
-This is a deliberate deviation from "one private repo per user" and becomes its own Appendix C item
-(next number 114). Review the exposures first: `profile.yaml` (interests, schedule, language), the
-`state` branch and digests, Actions logs, tokenized `extra_rss` URLs, `base_url` values, open Issues and
-pull requests. Propose the smallest mechanism (what is copied, token scope, trigger), list what becomes
-public, write the Appendix C item and tests, then wait. Free facts: Pages is for public repos on GitHub
-Free (item 107). `delivered.json` already shows that state carries item ids, timestamps and tags, which
-reveal reading interests.
+### B. Digest live checks still open
+Weekly trends (needs a weekly digest), embeddings (optional), stale-source Issues (needs a few days of feed
+runs), `evals live --limit 3` (spend-limited key), failure notice with a broken SMTP secret in a scratch repo
+(never the real secret). Optional fix, not built: start the 6-day feedback wait only when a run counted a vote.
 
-### C. Task C: remaining publishing work
-Push `axon-gateway`. Branch ruleset and secret scanning with push protection on each public repo (free for
-public repos only). Dependabot PRs: merge each bump together with the `scripts/pin_actions.py` table
-update, or `pin_actions.py --check` fails. Pin the feed's unpinned dev requirements. Note the `tld`
-dependency is MPL (kept as a dependency). Then the gateway first-push items below.
+### C. Gateway and Tier 3 remaining
+Tier 3 over MCP; measurements (subrequests, CPU, KV reads and writes, start-to-completed latency, revoke
+propagation); `Retry-After` on a real 429; CPU p99; a real MCP and A2A client; `npm run prompt:compare` once
+more; the misleading cancel message "can no longer be canceled" for a run not yet listed; narrow the Cloudflare
+deploy token (no expiry, broad template) and record what it needs; optionally declare
+`GITHUB_APP_PRIVATE_KEY` as a required secret in `wrangler.toml` so a deploy cannot silently lose it; a
+proxy-aware version of `scripts/integration-real.js`. Keep `[observability] enabled = false`.
 
-### D. Gateway and Tier 3 first-push checklist (not started)
-5. axon-gateway: (a) resolve `<pin-to-commit-sha>` in `ci.yml`; CI green including `prompt:check` and the
-   hub schema contract tests (`REQUIRE_HUB_SCHEMAS=1` also needs `feed-item.schema.json`); (b) Cloudflare
-   account, `wrangler login`, set `PUBLIC_URL` in `wrangler.toml` to the real `workers.dev` URL (a
-   placeholder makes the Agent Card answer 500 on purpose); confirm `FEED_BASE` is the Pages feed
-   (https only); (c) check `compatibility_date` against the deployed workerd; (d) `deploy.yml` exists
-   (item 81); (e) deploy; `/healthz`, Agent Card URL, then the PowerShell smoke tests from
-   `docs/local-run.md` against the deployed URL; (f) an MCP client smoke test with a real client; (g) a
-   real Tier 2 call with a dedicated, spend-limited key: confirm the key appears nowhere (response,
-   `wrangler tail`, dashboard logs); (h) verify the rate limit binding on the free plan and note the real
-   429 behaviour; (i) record real numbers (CPU per request for Tier 1 on the largest shard and Tier 2,
-   subrequests, requests per day); (j) keep `[observability] enabled = false`; (k) secret scanning and
-   push protection on every public repo (spec 10.2); (l) `npm run prompt:compare` against the template
-   copy once more.
-6. Tier 3 (`docs/github-app-setup.md`): (n) create the GitHub App (Actions write, Contents read, Metadata
-   read, no webhook) and install it on the one private digest repo (`axon-digest`); (o) `wrangler kv
-   namespace create TOKENS`, put the id and `GITHUB_APP_ID` in `wrangler.toml`, `wrangler secret put
-   GITHUB_APP_PRIVATE_KEY` from the `.pem`; do not set `ENVIRONMENT` or any `GITHUB_*` override; (p)
-   repository variable `GATEWAY_URL` = `PUBLIC_URL`; (q) run `register`, `issue-token` (check whether the
-   job summary shows the token or `***`: item 64), `revoke-token`; (r) `node scripts/integration-real.js`;
-   (s) measure subrequests per start and poll, CPU per request, KV reads and writes per day, `message/send`
-   to `completed` latency, run-title lookup lag, revoke propagation; (t) a real Tier 2 call under workerd
-   (item 74); (u) confirm the owner policy pre-check and an `owner_policy` result file both map to
-   `rejected`.
-7. Record real numbers (latency, CPU time, quotas) in this file.
+### D. Housekeeping
+Dependabot: gateway PR #1 (actions bump) waits for the `scripts/pin_actions.py` table; the npm group PR (minor
+and patch only) may be merged after CI. Pin the feed's dev requirements. `tld` is MPL (kept). Branch rulesets on
+the public repos.
 
 ### E. Deferred by decision (do not build unless asked)
-Natural-language Tier 3 (item 102, five mitigation rules), A2A v1.0 (item 71), MCP OAuth metadata
-(item 72).
+Task B, the public feed repository (item 114); natural-language Tier 3 (item 102); A2A v1.0 (item 71); MCP OAuth
+metadata (item 72).
+
+### F. Next: the demo
+The maintainer asked for help to demonstrate the whole project. Audience and format are to be decided.
 
 ## 8. Environment constraints (company laptop)
+- `*.workers.dev` resolves and answers from the laptop (observed 2026-11-27: all gateway smoke tests ran
+  from it). In the classic PowerShell window Ctrl+V does not paste into `Read-Host -AsSecureString` (one
+  control character arrives); copy the key and read it with `Get-Clipboard`, validate its length and
+  characters without printing it, then clear the clipboard.
+- Node's built-in `fetch` (Node 22.14) does not use the company proxy and fails with `ENOTFOUND` for
+  `workers.dev`, while PowerShell `Invoke-RestMethod` reaches it; run live checks from PowerShell (item 127).
+  The Cloudflare dashboard "Add variable" form defaults to type Text; choose Secret for keys (item 123).
 - Outbound DNS is restricted: `smtp.gmail.com`, `api.telegram.org` and `hooks.slack.com` do not resolve
   (observed 2026-11-26), and `api.deepseek.com` did not resolve on 2026-10-28. SMTP, Telegram and Slack
   therefore cannot be tested locally; all live channel tests ran in Actions. Do not work around IT policy
@@ -310,7 +375,13 @@ Natural-language Tier 3 (item 102, five mitigation rules), A2A v1.0 (item 71), M
 **Live walkthrough (draft items, 2026-11-26): 106 licence (Apache-2.0); 107 repo visibility and GitHub
 Free facts; 108 hub CI fixes; 109 fake secrets in tests; 110 frozen baseline profile and the
 template-snapshot limitation; 111 issue-form body shape and `None` for an unset dropdown; 112 live
-results; 113 environment facts. Next number: 114.**
+results; 113 environment facts.**
+**Gateway deploy (draft items, 2026-11-27): 114 Task B deferred; 115 gateway push, Dependabot grouping and the
+TypeScript 7 conflict, deploy guard on first pushes; 116 deploy-config test changed deliberately; 117
+Cloudflare setup and deploy facts; 118 gateway live smoke results; 119 live Tier 2 call and key handling; 120
+rate limit and metrics observed; 121 corrections (feed URL, hub name, stale checklist item); 122 template totals, Cloudflare edge log,
+feedback live result and throttle; 123 Tier 3 setup facts and the unmasked token; 124 the `null` result-file
+bug; 125 Atom and keepalive live; 126 Tier 3 live results; 127 environment facts. Next number: 128.**
 **Phase 6 (in the spec): 88 Telegram; 89 Slack; 90 shared chat helpers and hardening fixes; 91 decisions
 D1 to D8; 92 model name question (closed by 94); 93 facts for later stages; 94 `deepseek-flash` default;
 95 Atom delivery; 96 embeddings; 97 trends; 98 feedback weights; 99 `digest.yml`; 100 maintainer decisions
@@ -355,22 +426,23 @@ data shape for `-32022`, strict `Mcp-Method` and `Mcp-Name` enforcement for 2026
 charset, key charset `[A-Za-z0-9._~+/=:-]{8,512}`.
 **Appendix B status:** items 1 to 4 verified 2026-10-25 (item 47). Pages (12) works in practice for the
 feed; limits seen in docs on 2026-11-26: 1 GB site, 100 GB/month soft, 10 branch builds per hour. Gmail
-SMTP (10) worked on port 465 with an app password. Still unverified: Actions limits (5), GitHub App
-permission details (6), OIDC claims (7). Re-check A2A v1.0 status before Phase 4 work resumes (labelled
+SMTP (10) worked on port 465 with an app password. Still unverified: Actions limits (5). Verified live 2026-11-28: GitHub App permissions Actions
+read and write, Contents read-only, Metadata read-only are enough to dispatch, list runs and read the result file (6);
+the OIDC token was accepted by the gateway for register and issue-token (7). Re-check A2A v1.0 status before Phase 4 work resumes (labelled
 draft or release candidate on the official page; one third-party page claimed a March 2026 release).
 
 ## 11. Open items
-1. Live checks listed in 7.A.3; failure-notice live test.
-2. Task B (public feed repo) and Task C (push gateway, rulesets, Dependabot with the pin table).
-3. Everything in 7.D (gateway deploy, Tier 3 against real GitHub and KV, live Tier 2).
-4. Entity matching misses new version names (Qwen4); sources under `needs_research:`.
-5. Taxonomy schema export (`name_ambiguous`) and hub tests: confirm after the last feed change.
-6. `onboard.yml` works for personal-account repositories only (item 101).
-7. Template fixes do not reach existing user repos (item 110); document the manual copy.
-8. Real-runtime numbers for the gateway; dev-only `npm audit` findings (`docs/npm-audit.md`).
-9. The eval set of 30 to 50 human-checked cases (yours to write); `deepseek-flash` length-limit retries
-   (watch cost before raising `max_items`; the prompt stays locked).
-10. A2A v1.0, MCP OAuth metadata, natural-language Tier 3: deferred (section 7.E).
+1. Section 7.B digest live checks; 7.C gateway and Tier 3 remaining (MCP route, measurements).
+2. Dependabot PRs with the pin table; branch rulesets; feed dev requirements unpinned.
+3. Entity matching misses new version names (Qwen4); sources under `needs_research:`.
+4. Taxonomy schema export (`name_ambiguous`) and hub tests: confirm after the last feed change.
+5. `onboard.yml` works for personal-account repositories only (item 101).
+6. Template fixes do not reach existing user repos (item 110); document the manual copy.
+7. Dev-only `npm audit` findings (`docs/npm-audit.md`); the eval set of 30 to 50 human-checked cases;
+   `deepseek-flash` schema-violation retries (watch cost before raising `max_items`).
+8. Deploy token has no expiry (maintainer's choice); narrow it.
+9. The mutation count in STATE (95) was 94 in the project bundle; confirm on the laptop.
+10. Task B deferred (item 114); A2A v1.0, MCP OAuth metadata, natural-language Tier 3 deferred.
 
 ## 12. Working conventions
 - The user runs every test suite and every real-service step on the laptop; the assistant writes code,

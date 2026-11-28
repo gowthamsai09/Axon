@@ -1919,22 +1919,169 @@ Mocked only so far: Atom (rss) channel, embeddings, trends, feedback links, keep
 
 The company laptop cannot resolve api.telegram.org, hooks.slack.com or the SMTP host, and the company pip index answers 401. So all live channel tests ran in Actions, not locally. The Slack CLI failed with 403 (apps.hosted.generateAuthTicket); the incoming webhook was created in a browser on a personal device at api.slack.com/apps. GitHub and github.io are reachable. Commits use the GitHub noreply address with "Block command line pushes that expose my email" on.
 
-### Open items after Phase 6
+114. Task B (public feed repository) deferred
+Decision (maintainer, 2026-11-27): no public feed repository for now. Reason: the digest is read on
+Telegram, Slack and email; a public repo is only needed to serve `rss/feed.xml` to an RSS reader, because
+`raw.githubusercontent.com` links into a private repo are unreadable for readers, the built-in token cannot
+write to another repo, and Pages for private repos needs a paid plan. The locked rule "one private repo per
+user" stands. Design kept for a later decision: one public repo holding only `feed.xml`; a new workflow step
+after "Run digest" (scheduled runs only, `continue-on-error`, token in that step only); a fine-grained token
+limited to that repo (Contents read and write), stored as `PUBLIC_FEED_TOKEN`, repo name in
+`PUBLIC_FEED_REPO`; a `publish-feed` command validating the name, fixed host `api.github.com`, XML and size,
+using the Contents API and skipping unchanged bytes; the public entry would use public links, a key built from
+the public repo name, drop `extra_rss` items (they may be private or tokenized) and drop the usage line.
+Public by design would be: item titles, links, summaries, the model name and UTC update times.
+ 
+115. Gateway pushed; Dependabot and TypeScript; deploy guard on first pushes
+`axon-gateway` was pushed and its first `ci` run is green (**verified live**). Dependabot's first npm group
+(9 updates) failed `npm ci` with `ERESOLVE`: TypeScript 6.0.3 to 7.0.2 conflicts with `typescript-eslint`,
+whose peer range stops below 6.1. Fix: `.github/dependabot.yml` groups only minor and patch updates and
+ignores TypeScript major bumps; the replacement group PR (7 updates) was green. The actions bump PR stays
+unmerged until `scripts/pin_actions.py` holds the new SHAs. The `deploy` workflow failed on its first runs at
+"Refuse to deploy placeholder configuration", as designed (no token was used).
+ 
+116. `test/deploy-config.test.ts` changed deliberately
+The test "blocks the repository's own wrangler.toml until the placeholders are replaced (first push)"
+failed once the real `PUBLIC_URL` and KV id were committed. It now asserts the opposite: the repo's own
+`wrangler.toml` must pass `scripts/check-deploy-config.js`, so a commit that brings a placeholder back fails
+CI. The other 16 tests in the file are unchanged. I missed this test when listing the tests the first deploy
+would touch; add it to the first-push checklist wording. Gateway total unchanged: 888 tests.
+ 
+117. Cloudflare setup and deploy facts
+- Free plan, no card. An account with no Workers showed no "Your subdomain" line; the account `workers.dev`
+  subdomain (`gowthamsaiyadlapalli1234`, auto-assigned from the account, accepted as public) became visible
+  only through a throwaway Worker, which was then deleted.
+- KV namespace `axon-gateway-tokens` (id public, in `wrangler.toml`; Wrangler prints it in the bindings table).
+- Account API token from the "Edit Cloudflare Workers" template, scoped to the one account; no expiry
+  (maintainer's choice); broader than needed (KV and other products); to be narrowed after the first
+  successful deploy. Stored only as the environment secret `CLOUDFLARE_API_TOKEN`; the account id as
+  `CLOUDFLARE_ACCOUNT_ID`. Neither was shown to the assistant.
+- GitHub environment `production` was created automatically by the failed `deploy` runs, with no protection.
+  The maintainer added a required reviewer (self-review allowed, because there is one reviewer) and
+  secrets. Deploy #4 waited for approval, then succeeded (**verified live**).
+- Result: version `dd9b9a55-7dba-47dc-906e-35f0f99596dd`, upload 1166.27 KiB (215.79 KiB gzip), startup
+  23 ms; the three rate-limit bindings and the placeholder `GITHUB_APP_ID` (Tier 3 off) accepted.
+- `docs/deploy.md` was missing although `deploy.yml` refers to it; added.
+118. Gateway smoke results (verified live, from the laptop)
+`/healthz` `ok`; Agent Card url equals `PUBLIC_URL/a2a`, protocol 0.3.0, two skills, scheme `callerLlmKey`,
+no Tier 3; A2A Tier 1 `completed`, 3 items, not stale, no fallback, `missing_shards` empty (first read of the
+real Pages feed from Cloudflare); MCP `server/discover` (both revisions), legacy `tools/list`, and
+`tools/call get_ai_updates` (3 items); `GET /a2a` 405, `text/plain` 415, root 404; Tier 2 without a key
+`input-required`. **Not run:** a real MCP or A2A client, the modern MCP `tools/call` path with its headers.
+ 
+119. Live Tier 2 call and key handling
+One real call with a dedicated DeepSeek key: two items summarized by `deepseek` / `deepseek-flash`,
+`completed`, both `ok`; the key was not in the response. The key crossed the company proxy (HTTPS may be
+inspected), so a dedicated key was used and deleted afterwards. Tooling finding: Ctrl+V does not paste into
+`Read-Host -AsSecureString` in the classic PowerShell window (a control character arrived and PowerShell
+refused the header locally, so nothing was sent). Working method: `Get-Clipboard`, validate the length and
+the gateway's key-character rule without printing the value, then clear the clipboard. **Open:** the
+Cloudflare Observability or Logs area (expected empty, `[observability]` is off) and `wrangler tail`.
+ 
+120. Rate limit and metrics observed
+Rate limit on the free plan: 70 POSTs in a row gave 61 `200` and 9 `429`; `Retry-After` was not captured
+(**open**). Cloudflare Metrics (last 24 h, about 83 requests): 83 invocations, 133 subrequests, 0 errors
+(429 responses are not Worker errors), CPU time 2 ms (panel) and median CPU 4.62 ms (active deployment),
+wall time 7 ms. Only medians were read; p99, Tier 2 CPU and per-request subrequests remain to be measured
+against the 10 ms free-plan CPU limit.
+ 
+121. Corrections to earlier items and docs
+- Item 112: the feed is served under `/feed/`: `meta.json` is at `https://gowthamsai09.github.io/axon-feed/feed/meta.json`;
+  `.../axon-feed/meta.json` returns 404. `FEED_BASE` is `https://gowthamsai09.github.io/axon-feed/feed`
+  (the gateway's `wrangler.toml` was right). Also replace "Open: the field names of `delivered.json` were not
+  reported yet" with "`delivered.json` maps item id to `{at, tags}` only; four runs left 40 distinct ids (10
+  per run), so nothing was delivered twice (**verified live**)".
+- STATE and docs: the hub repo is `gowthamsai09/Axon` (GitHub ignores case).
+- First-push checklist 5(a): there are no `<pin-to-commit-sha>` placeholders left; the pins are SHAs.
+- First-push checklist 5(d) and (e) are done; the deploy workflow exists and works (items 116, 117).
 
-- **First-push checks:** `docs/first-push-phase6.md` (Telegram, Slack, Hugging Face and OpenAI-compatible
-  embeddings, `deepseek-flash` with `thinking: disabled`, GitHub Issue fields and issue-form body shape,
-  `rss/feed.xml` raw URL, thumbs links, Trends section, no secrets in logs or state) plus the Tier 3 list
-  from Phase 4 and `docs/first-push-phase5.md`.
-- **Deferred by decision:** natural-language Tier 3 (102); A2A v1.0 migration (71, 91 D1); MCP OAuth
-  with protected resource metadata (72, 91 D2).
-- **End of Phase 6 (maintainer reminder, item 100):** a guided live setup of secrets, a Telegram bot and a
-  Slack webhook, and publishing only the digest feed from a separate small public repository while the main
-  repository stays private. The second part is a deliberate deviation from the "private repo" lock and
-  becomes its own Appendix C item when done, with the exposures list from item 100.
-- **Appendix B:** still open or partly open: 5, 6 (permission details), 10, 12.
-- **Not run:** `npm audit` review, repo hardening (`docs/repo-hardening.md`), the 30 to 50 human-checked
-  eval cases.
+122. Template totals, Cloudflare edge log, feedback live result
+- **Template tests (observed):** with `HUB_DIR` set to the real hub, 1400 collected, 1355 passed, 45 skipped
+  (44 need a POSIX bash and run in CI; 1 is the empty parameter set at `tests/test_workflows.py:79`). The
+  earlier derived figure (about 1357) was 2 too high.
+- **Cloudflare edge log:** Observability > Logs > HTTP requests is not empty. It lists edge request
+  metadata (host, path, status, source IP) for the gateway, for example `POST /mcp` and `POST /a2a`, both
+  `200`. It is separate from Workers observability (`[observability] enabled = false`). **Open:** whether
+  any request-header field containing `X-LLM-Key` is stored; check the Fields list on a row.
+- **Feedback links, verified live:** with `feedback.enabled: true` the email carried thumbs links; two
+  votes submitted as Issues by the owner were read, parsed and closed:
+  `feedback: applied 2 vote(s) from 2 issue(s); 0 ignored, 0 for unknown items, 2 closed`. So the
+  prefilled body reached the Issue with the strict `item:<id> vote:up|down` shape, `delivered.json` held
+  both item ids, and the Issues API fields used for eligibility worked. **Not verified:** a stranger's
+  vote being ignored, and the effect of the weights on a later ranking.
+- **Throttle observation:** the first run after enabling feedback found no Issues but still wrote
+  `weights.json` with `updated_at = now`. That starts the 6-day wait (`MIN_INTERVAL_DAYS`, item 98), so
+  a vote cast the same day waits. Workaround used: delete `weights.json` on the `state` branch. A fix
+  (start the wait only when a run counted something) is offered and **not built**; if built it becomes
+  its own item with changes to `digest/feedback.py` and `tests/test_feedback.py`.
 
+ 123. Tier 3 live: GitHub App setup facts and the unmasked token (draft, 2026-11-28)
+- **Setup facts (observed):** the GitHub App is created under the personal account with the webhook "Active"
+  box unticked (otherwise Webhook URL is required), permissions Actions read and write, Contents read-only,
+  Metadata read-only, installed on `axon-digest` only. The Cloudflare dashboard "Add variable" form defaults to
+  type Text: a private key saved that way is shown in plain text, and the next `wrangler deploy` removes
+  dashboard variables that are not in `wrangler.toml`. The key must be added with type **Secret**; the key
+  that was briefly stored as Text was rotated (new key generated, old one deleted at GitHub).
+- **Verified live:** with the real `GITHUB_APP_ID` in `wrangler.toml` (deploy `98dcd7e9`) and the Secret in
+  place, the Agent Card lists `run_personal_digest` and the `ownerBearer` scheme; the `register` workflow
+  succeeded with GitHub's real OIDC token and App key.
+- **Found live (closes the open risk in item 64):** GitHub shows `***` for the token in the job summary when
+  the workflow registers it with `::add-mask::`, so the token was unreadable.
+- **Deviation:** `issue-token.yml` no longer masks the token. It is never printed to the log: the only use of
+  `$TOKEN` is the one `printf` that writes the summary. `tests/test_phase4.py` now asserts this (and that the
+  log of a real run holds no token) instead of asserting the mask; mutation `wf-issue-token-echo` (95th in
+  this bundle) breaks it and is killed. The token is readable by anyone who can read the run (the private
+  repo's collaborators), so the owner copies it and deletes the run. The OIDC token stays masked.
+- **Docs to fix:** `docs/github-app-setup.md` (gateway) says "tell me and the workflow switches to an artifact";
+  replace with this item. STATE says 95 mutations before this change; the bundle has 94 (the 95th is not in it).
+ 124. Tier 3 live: the gateway rejected every real result file (draft, 2026-11-28)
+- **Found live:** `integration-real` equivalent against the deployed gateway: the digest run in `axon-digest`
+  succeeded (3 items, `return_only`), but the task ended `failed` with "The run wrote a result the gateway could
+  not read." The A2A start, App sign-in, workflow dispatch and run lookup all worked on real GitHub.
+- **Cause:** the template writes `tasks/<id>.json` with `result.model_dump(mode="json")`, so the unused one of
+  `summary` / `fallback_snippet` is JSON `null`. The hub JSON Schema (exported from pydantic) allows `null` for
+  both, but the gateway's zod schema used `.optional()`, which refuses `null`. Since exactly one of the two is
+  always unused, every real result was refused. Reproduced here with zod 4.6.7 and the real `src/schemas.ts`.
+- **Why the tests missed it:** gateway fixtures never contained the `null`, and the contract test used a
+  fixture with only `fallback_snippet`; mocks cannot show what the other language really writes.
+- **Fix (gateway only):** `TaskItem` drops a `null` `summary` / `fallback_snippet` before validating, then the
+  existing "exactly one" rule still applies; both null, both set, and a null in any other field are refused.
+  Parsed output carries no `null` keys. Tests: `test/task-result.test.ts` (3 new, including one against the hub
+  schema) and `test/t3-flow.test.ts` (1 new: a file written the way the template writes it completes).
+- **Not changed:** the template (`model_dump` keeps writing `null`; the published schema allows it).
+- **Open observation (not yet explained):** a second start followed at once by `tasks/cancel` returned -32002
+  "The task can no longer be canceled". Re-test after the fix, waiting about 20 seconds before the cancel.
+ 125. Atom channel and keepalive verified live (draft, 2026-11-28)
+- **Atom (`rss`):** two manual `digest` runs with `delivery.channel: rss` produced `rss/feed.xml` and
+  `rss/entries.json` on the `state` branch. The second file held 2 entries, newest first (14:12:21 and 14:08:16
+  UTC), 20 distinct arXiv links across them (no item delivered twice), a well-formed Atom `feed` root, `self` link
+  `https://raw.githubusercontent.com/<owner>/axon-digest/state/rss/feed.xml`, plain-text content. A reader cannot
+  fetch the raw URL of a private repository without a sign-in (as item 95 says). The channel was set back to
+  `email`. **Not checked:** a real feed reader; whether a rerun of the same workflow run replaces its own entry.
+- **`keepalive.yml`:** one manual run was green and `digest.yml` still showed as enabled.
+ 126. Tier 3 verified live over A2A (draft, 2026-11-28)
+- **Sequence observed:** `register` green; token issued; call without a token `401`; `message/send`
+  `run_personal_digest` (3 items) `submitted`, `working` at 16 s, `completed` at 32 s with 3 items,
+  `deepseek/deepseek-flash`, 1 warning (`deepseek: summary rejected (schema violation in: notable_figures)`, the
+  validator working as designed), `untrusted_content: true`. The digest run in `axon-digest` took 25 s and wrote
+  the result with `delivered=return_only`.
+- **Cancel:** a cancel sent immediately after the start returned -32002 "The task can no longer be canceled",
+  because `digestCancel` returns `not_cancelable` while the run is not yet listed (spec 8.2 grace). After a
+  12-second wait the cancel returned `canceled`. The message wording is misleading for the not-yet-listed case
+  (open, minor).
+- **Revoke:** after the `revoke-token` workflow the same token gave `401`; before it, the task read returned the
+  completed artifact. The delay was not measured (KV propagation is documented as up to about 60 seconds).
+- **Test totals:** gateway 992 passed after the null fix (888 before it; the derived 892 was 100 low).
+- **Not verified:** Tier 3 over MCP; subrequests, CPU and KV usage per request; a real MCP or A2A client.
+ 127. Environment facts from the Tier 3 run (draft, 2026-11-28)
+- Node 22.14's built-in `fetch` does not use the company proxy: `scripts/integration-real.js` failed with
+  `ENOTFOUND` for `workers.dev`, while PowerShell `Invoke-RestMethod` worked. The same steps were run from
+  PowerShell. A proxy-aware script is an open, optional item.
+- Loading a token without showing it: `Get-Clipboard`, check it against `^axn_[A-Za-z0-9_-]{43}$`, set the
+  environment variable, clear the clipboard only after a match (an earlier version cleared it even when the
+  load failed).
+- The GitHub Actions job summary shows only the token id; the token itself is shown only because the workflow does
+  not mask it (item 123).
 ---
 
 *End of document.*
